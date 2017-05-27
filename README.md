@@ -1,6 +1,7 @@
 # Wallman
 
 A simple tool for managing wallpaper profiles with feh. Designed for use in i3.
+
 Usage: 
 wallman list - list profiles
 wallman apply profile_name - set profile
