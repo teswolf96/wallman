@@ -13,20 +13,20 @@ Profiles can be set up in ~/.config/wallman
 Example config:
 ---------------
 
-Profile_Name:
+	Profile_Name:
 
-	monitors:2
+		monitors:2
+	
+		/path/to/wallpaper1.jpg
 
-	/path/to/wallpaper1.jpg
-
-	/path/to/wallpaper2.png
+		/path/to/wallpaper2.png
 
 
-Profile_Name_2:
+	Profile_Name_2:
 
-	monitors:2
+		monitors:2
 
-	/path/to/wallpaper1.jpg
+		/path/to/wallpaper1.jpg
 
-	/path/to/wallpaper2.png
+		/path/to/wallpaper2.png
 
