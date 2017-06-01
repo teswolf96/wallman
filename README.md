@@ -6,7 +6,7 @@ Usage:
 
 wallman list - list profiles
 
-wallman apply profile_name - set profile
+wallman profile_name - set profile
 
 Profiles can be set up in ~/.config/wallman
 
