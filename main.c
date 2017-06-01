@@ -49,13 +49,13 @@ int main(int argc, char **argv) {
 
     if(strcmp(argv[1],"list") == 0){
         list_profiles();
-    }else if(strcmp(argv[1],"apply") == 0) {
-        if(argc < 3){
+    }else /*if(strcmp(argv[1],"apply") == 0) */{
+        if(argc < 2){
             printf("Not enough arguments\n");
             return 0;
         }
 
-        int conv = atoi(argv[2]);
+        int conv = atoi(argv[1]);
         if(conv > 0) { /* User passed in an integer */
             if(conv > num_profiles){
                 printf("No matching profiles\n");
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
             //printf("Word detected\n");
             for(int idx=0;idx<num_profiles;idx++){
                 //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-                if(strcmp(argv[2],profiles[idx].name) == 0){
+                if(strcmp(argv[1],profiles[idx].name) == 0){
                     conv = idx;
                     break;
                 }
