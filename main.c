@@ -3,8 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 
+#define NUM_PROFILES 10
+
 int load_profiles();
 int list_profiles();
+int save_profiles();
+int set_path(char profile_name[], int mon_num, char path[]);
 
 struct wallpaper{
     char name[50]; //Profile name
@@ -12,7 +16,7 @@ struct wallpaper{
     char paths[3][256]; //Number of paths
 };
 
-struct wallpaper profiles[10];
+struct wallpaper profiles[NUM_PROFILES];
 int num_profiles;
 
 int main(int argc, char **argv) {
@@ -20,7 +24,8 @@ int main(int argc, char **argv) {
     if(argc < 2){
         printf("Usage: \n");
         printf("wallman list - list profiles\n");
-        printf("wallman apply profile_name - set profile\n");
+        printf("wallman set profile_name monitor_num wallpaper_path\n");
+        printf("wallman profile_name - set profile\n");
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
         printf("---------------\n");
@@ -47,8 +52,17 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    if(strcmp(argv[1],"list") == 0){
+    if(strcmp(argv[1],"list") == 0) {
         list_profiles();
+
+    }else if(strcmp(argv[1],"set") == 0){
+        if(argc < 5){
+            printf("Not enough arguments\n");
+            return 0;
+        }
+        int mon_num = atoi(argv[3]);
+        set_path(argv[2],mon_num,argv[4]);
+        save_profiles();
     }else /*if(strcmp(argv[1],"apply") == 0) */{
         if(argc < 2){
             printf("Not enough arguments\n");
@@ -185,3 +199,67 @@ int load_profiles() {
     return 0;
 }
 
+int save_profiles(){
+    printf("Saving profiles\n");
+    //char *fileName = strcat(getenv("HOME"), "/.config/wallman");
+    char* fileName = getenv("HOME");
+    //printf("hi! %s - :-)\n",fileName);
+    FILE *config = fopen(fileName, "w+"); /* should check the result */
+
+    if (config == NULL) {
+        fileName = "/etc/wallman";
+        config = fopen(fileName, "r");
+        if (config == NULL) {
+            printf("File could not be opened\n");
+            return -1;
+        }
+    }
+    //fprintf(config,"meow!\n");
+    //fputs("meow2!\n",config);
+    int profile_idx = 0;
+    while(profile_idx < NUM_PROFILES && strcmp(profiles[profile_idx].name,"undefined name") != 0){
+        char* title = strcat(profiles[profile_idx].name,":\n");
+        fprintf(config,title);
+        char monitor_count_str[10] = "";
+        sprintf(monitor_count_str,"    monitors: %d\n",profiles[profile_idx].mon_num);
+        fprintf(config,monitor_count_str);
+        for(int idx=0;idx<profiles[profile_idx].mon_num;idx++){
+            char path[500] = "";
+            sprintf(path,"    %s\n",profiles[profile_idx].paths[idx]);
+            fprintf(config,path);
+        }
+        fprintf(config,"\n");
+        profile_idx++;
+    }
+
+
+    fclose(config);
+
+}
+
+int set_path(char profile_name[80], int mon_num, char path[160]){
+    printf("Setting profile: %s on monitor %d to path %s\n",profile_name,mon_num,path);
+    int conv = -1;
+    //printf("Word detected\n");
+    for(int idx=0;idx<num_profiles;idx++){
+        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+        if(strcmp(profile_name,profiles[idx].name) == 0){
+            conv = idx;
+            break;
+        }
+    }
+    if(conv == -1){
+        printf("No matching profiles\n");
+        return 0;
+    }
+
+    printf("Identified profile index as %d\n",conv);
+
+    if(mon_num > profiles[conv].mon_num || mon_num <= 0){
+        printf("Invalid monitor selection\n");
+        return 0;
+    }
+
+    strcpy(profiles[conv].paths[mon_num-1],path);
+    return 0;
+}
