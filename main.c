@@ -133,7 +133,7 @@ int set_profile(char* profile_name){
 
 int list_profiles(){
     //printf("Number of profiles loaded: %d\n", num_profiles);
-    printf("Found current wallpaper: %s\n",curr_wallpaper);
+    printf("Current profile: %s\n",curr_wallpaper);
     printf("Loaded Profiles:\n");
     for(int idx=0;idx<num_profiles;idx++){
         printf("%d) %s\n",idx+1,profiles[idx].name);
@@ -232,8 +232,10 @@ int save_profiles(){
     }
     //fprintf(config,"meow!\n");
     //fputs("meow2!\n",config);
-    char* current = strcat("current: ",curr_wallpaper);
+    char current[100] = "";
+    sprintf(current,"current: %s\n",curr_wallpaper);
     fprintf(config,current);
+
     int profile_idx = 0;
     while(profile_idx < NUM_PROFILES && strcmp(profiles[profile_idx].name,"undefined name") != 0){
         char* title = strcat(profiles[profile_idx].name,":\n");
