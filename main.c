@@ -26,11 +26,13 @@ int main(int argc, char **argv) {
     if(argc < 2){
         printf("Usage: \n");
         printf("wallman list - list profiles\n");
+        printf("wallman current - apply currently set profile\n");
         printf("wallman set profile_name monitor_num wallpaper_path\n");
         printf("wallman profile_name - set profile\n");
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
         printf("---------------\n");
+        printf("current: Profile_Name\n");
         printf("Profile_Name:\n");
         printf("\tmonitors:2\n");
         printf("\t/path/to/wallpaper1.jpg\n");
@@ -67,6 +69,8 @@ int main(int argc, char **argv) {
         int mon_num = atoi(argv[3]);
         set_path(argv[2],mon_num,argv[4]);
         save_profiles();
+    }else if(strcmp(argv[1],"current") == 0){
+        set_profile(curr_wallpaper);
     }else /*if(strcmp(argv[1],"apply") == 0) */{
         if(argc < 2){
             printf("Not enough arguments\n");
@@ -75,7 +79,6 @@ int main(int argc, char **argv) {
 
         set_profile(argv[1]);
     }
-
 
     return 0;
 
