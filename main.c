@@ -8,6 +8,7 @@
 int load_profiles();
 int list_profiles();
 int save_profiles();
+int set_profile(char* profile_name);
 int set_path(char profile_name[], int mon_num, char path[]);
 
 struct wallpaper{
@@ -17,6 +18,7 @@ struct wallpaper{
 };
 
 struct wallpaper profiles[NUM_PROFILES];
+char curr_wallpaper[256];
 int num_profiles;
 
 int main(int argc, char **argv) {
@@ -40,6 +42,8 @@ int main(int argc, char **argv) {
         printf("\t/path/to/wallpaper2.png\n");
         return 0;
     }
+
+
 
     num_profiles = 0;
     for(int idx=0;idx<10;idx++){
@@ -69,54 +73,7 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        int conv = atoi(argv[1]);
-        if(conv > 0) { /* User passed in an integer */
-            if(conv > num_profiles){
-                printf("No matching profiles\n");
-                return 0;
-            }
-
-            char command[1024] = "feh";
-            for(int idx=0;idx<profiles[conv-1].mon_num;idx++){
-                strcat(command," --bg-scale \'");
-                strcat(command,profiles[conv-1].paths[idx]);
-                strcat(command,"\'");
-            }
-
-            strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
-            //printf("Command to apply: %s\n",command);
-            system(command);
-
-        }else if(conv == 0){ /* User passed in a string or is trying to be tricky >_> */
-            conv = -1;
-            //printf("Word detected\n");
-            for(int idx=0;idx<num_profiles;idx++){
-                //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-                if(strcmp(argv[1],profiles[idx].name) == 0){
-                    conv = idx;
-                    break;
-                }
-            }
-            if(conv == -1){
-                printf("No matching profiles\n");
-                return 0;
-            }
-
-            char command[1024] = "feh";
-            for(int idx=0;idx<profiles[conv].mon_num;idx++){
-                strcat(command," --bg-scale \'");
-                strcat(command,profiles[conv].paths[idx]);
-                strcat(command,"\'");
-            }
-
-            strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
-            //printf("Command to apply: %s\n",command);
-            system(command);
-
-        }else{
-            printf("No matching profiles\n");
-        }
-
+        set_profile(argv[1]);
     }
 
 
@@ -124,8 +81,59 @@ int main(int argc, char **argv) {
 
 }
 
+int set_profile(char* profile_name){
+    int conv = atoi(profile_name);
+    if(conv > 0) { /* User passed in an integer */
+        if(conv > num_profiles){
+            printf("No matching profiles\n");
+            return 0;
+        }
+
+        char command[1024] = "feh";
+        for(int idx=0;idx<profiles[conv-1].mon_num;idx++){
+            strcat(command," --bg-scale \'");
+            strcat(command,profiles[conv-1].paths[idx]);
+            strcat(command,"\'");
+        }
+
+        strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
+        //printf("Command to apply: %s\n",command);
+        system(command);
+
+    }else if(conv == 0){ /* User passed in a string or is trying to be tricky >_> */
+        conv = -1;
+        //printf("Word detected\n");
+        for(int idx=0;idx<num_profiles;idx++){
+            //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+            if(strcmp(profile_name,profiles[idx].name) == 0){
+                conv = idx;
+                break;
+            }
+        }
+        if(conv == -1){
+            printf("No matching profiles\n");
+            return 0;
+        }
+
+        char command[1024] = "feh";
+        for(int idx=0;idx<profiles[conv].mon_num;idx++){
+            strcat(command," --bg-scale \'");
+            strcat(command,profiles[conv].paths[idx]);
+            strcat(command,"\'");
+        }
+
+        strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
+        //printf("Command to apply: %s\n",command);
+        system(command);
+
+    }else{
+        printf("No matching profiles\n");
+    }
+}
+
 int list_profiles(){
     //printf("Number of profiles loaded: %d\n", num_profiles);
+    printf("Found current wallpaper: %s\n",curr_wallpaper);
     printf("Loaded Profiles:\n");
     for(int idx=0;idx<num_profiles;idx++){
         printf("%d) %s\n",idx+1,profiles[idx].name);
@@ -153,6 +161,14 @@ int load_profiles() {
     }
 
     char line[256];
+
+    fgets(line, sizeof(line), config);
+    char* curr_wallpaper_found = strtok(line, ":");
+    curr_wallpaper_found = strtok(NULL, ":");
+    for (size_t i = 0, j = 0; curr_wallpaper_found[j] = curr_wallpaper_found[i]; j += !isspace(
+            curr_wallpaper_found[i++])); //Trim whitespace
+    strcpy(curr_wallpaper,curr_wallpaper_found);
+    //printf("Found current wallpaper: %s\n",curr_wallpaper);
 
     int config_read = 0;
     while (!config_read){
@@ -216,6 +232,8 @@ int save_profiles(){
     }
     //fprintf(config,"meow!\n");
     //fputs("meow2!\n",config);
+    char* current = strcat("current: ",curr_wallpaper);
+    fprintf(config,current);
     int profile_idx = 0;
     while(profile_idx < NUM_PROFILES && strcmp(profiles[profile_idx].name,"undefined name") != 0){
         char* title = strcat(profiles[profile_idx].name,":\n");
