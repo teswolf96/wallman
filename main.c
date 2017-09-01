@@ -91,7 +91,7 @@ int set_profile(char* profile_name){
             printf("No matching profiles\n");
             return 0;
         }
-
+        strcpy(curr_wallpaper,profile_name);
         char command[1024] = "feh";
         for(int idx=0;idx<profiles[conv-1].mon_num;idx++){
             strcat(command," --bg-scale \'");
@@ -117,7 +117,7 @@ int set_profile(char* profile_name){
             printf("No matching profiles\n");
             return 0;
         }
-
+        strcpy(curr_wallpaper,profile_name);
         char command[1024] = "feh";
         for(int idx=0;idx<profiles[conv].mon_num;idx++){
             strcat(command," --bg-scale \'");
@@ -132,6 +132,7 @@ int set_profile(char* profile_name){
     }else{
         printf("No matching profiles\n");
     }
+    save_profiles();
 }
 
 int list_profiles(){
