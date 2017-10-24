@@ -3,19 +3,27 @@
 #include <string.h>
 #include <ctype.h>
 
-#define NUM_PROFILES 10
+#define NUM_PROFILES 200 //Does anyone really need more than 200 profiles?
 
 int load_profiles();
+
 int list_profiles();
+
 int save_profiles();
-int set_profile(char* profile_name);
+
+int set_profile(char *profile_name);
+
 int set_path(char profile_name[], int mon_num, char path[]);
 
-struct wallpaper{
+struct wallpaper {
     char name[50]; //Profile name
     int mon_num; //Number of monitors
     char paths[3][256]; //Number of paths
 };
+
+struct wallpaper get_wallpaper(char *profile_name);
+
+int set_profile_temp(struct wallpaper temp);
 
 struct wallpaper profiles[NUM_PROFILES];
 char curr_wallpaper[256];
@@ -23,7 +31,7 @@ int num_profiles;
 
 int main(int argc, char **argv) {
 
-    if(argc < 2){
+    if (argc < 2) {
         printf("Usage: \n");
         printf("wallman list - list profiles\n");
         printf("wallman current - apply currently set profile\n");
@@ -46,33 +54,49 @@ int main(int argc, char **argv) {
     }
 
 
-
     num_profiles = 0;
-    for(int idx=0;idx<10;idx++){
-        strcpy(profiles[idx].name,"undefined name");
+    for (int idx = 0; idx < NUM_PROFILES; idx++) {
+        strcpy(profiles[idx].name, "undefined name");
 
     }
 
     int load_status = load_profiles();
-    if(load_status == -1){
+    if (load_status == -1) {
         return 0;
     }
 
-    if(strcmp(argv[1],"list") == 0) {
+    if (strcmp(argv[1], "list") == 0) {
         list_profiles();
 
-    }else if(strcmp(argv[1],"set") == 0){
-        if(argc < 5){
+    } else if (strcmp(argv[1], "set") == 0) {
+
+        if (argc < 4) {
             printf("Not enough arguments\n");
             return 0;
+        } else if (argc == 4) {
+
+            struct wallpaper temp = get_wallpaper(curr_wallpaper);
+
+            int monitor = atoi(argv[2]);
+            monitor--; //Correct indexing because reasons
+            //printf("Applying to monitor: %d\n",monitor);
+            char path[256];
+            strcpy(path, argv[3]);
+            strcpy(temp.paths[monitor], path);
+
+            set_profile_temp(temp);
+
+
+        } else if (argc == 5) {
+            int mon_num = atoi(argv[3]);
+            set_path(argv[2], mon_num, argv[4]);
+            save_profiles();
         }
-        int mon_num = atoi(argv[3]);
-        set_path(argv[2],mon_num,argv[4]);
-        save_profiles();
-    }else if(strcmp(argv[1],"current") == 0){
+
+    } else if (strcmp(argv[1], "current") == 0) {
         set_profile(curr_wallpaper);
-    }else /*if(strcmp(argv[1],"apply") == 0) */{
-        if(argc < 2){
+    } else /*if(strcmp(argv[1],"apply") == 0) */{
+        if (argc < 2) {
             printf("Not enough arguments\n");
             return 0;
         }
@@ -84,66 +108,101 @@ int main(int argc, char **argv) {
 
 }
 
-int set_profile(char* profile_name){
+struct wallpaper get_wallpaper(char *profile_name) {
+    int conv = -1;
+
+    for (int idx = 0; idx < num_profiles; idx++) {
+        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+        if (strcmp(profile_name, profiles[idx].name) == 0) {
+            conv = idx;
+            break;
+        }
+    }
+    if (conv == -1) {
+        printf("Could not find current profile\n");
+        exit(0);
+    }
+
+    //printf("Current wallpaper is: %s\n",profiles[conv].name);
+    return profiles[conv];
+
+}
+
+int set_profile_temp(struct wallpaper temp) {
+
+    /*Since we construct the temp profile ourselves, assume it is correct*/
+    char command[1024] = "feh";
+    for (int idx = 0; idx < temp.mon_num; idx++) {
+        strcat(command, " --bg-scale \'");
+        strcat(command, temp.paths[idx]);
+        strcat(command, "\'");
+    }
+    strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
+    //printf("Command to apply: %s\n", command);
+    system(command);
+
+}
+
+int set_profile(char *profile_name) {
     int conv = atoi(profile_name);
-    if(conv > 0) { /* User passed in an integer */
-        if(conv > num_profiles){
+    if (conv > 0) { /* User passed in an integer */
+        if (conv > num_profiles) {
             printf("No matching profiles\n");
             return 0;
         }
-        strcpy(curr_wallpaper,profile_name);
+        strcpy(curr_wallpaper, profile_name);
         char command[1024] = "feh";
-        for(int idx=0;idx<profiles[conv-1].mon_num;idx++){
-            strcat(command," --bg-scale \'");
-            strcat(command,profiles[conv-1].paths[idx]);
-            strcat(command,"\'");
+        for (int idx = 0; idx < profiles[conv - 1].mon_num; idx++) {
+            strcat(command, " --bg-scale \'");
+            strcat(command, profiles[conv - 1].paths[idx]);
+            strcat(command, "\'");
         }
 
-        strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
+        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
         //printf("Command to apply: %s\n",command);
         system(command);
 
-    }else if(conv == 0){ /* User passed in a string or is trying to be tricky >_> */
+    } else if (conv == 0) { /* User passed in a string or is trying to be tricky >_> */
         conv = -1;
         //printf("Word detected\n");
-        for(int idx=0;idx<num_profiles;idx++){
+        for (int idx = 0; idx < num_profiles; idx++) {
             //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-            if(strcmp(profile_name,profiles[idx].name) == 0){
+            if (strcmp(profile_name, profiles[idx].name) == 0) {
                 conv = idx;
                 break;
             }
         }
-        if(conv == -1){
+        if (conv == -1) {
             printf("No matching profiles\n");
             return 0;
         }
-        strcpy(curr_wallpaper,profile_name);
+        strcpy(curr_wallpaper, profile_name);
         char command[1024] = "feh";
-        for(int idx=0;idx<profiles[conv].mon_num;idx++){
-            strcat(command," --bg-scale \'");
-            strcat(command,profiles[conv].paths[idx]);
-            strcat(command,"\'");
+        for (int idx = 0; idx < profiles[conv].mon_num; idx++) {
+            strcat(command, " --bg-scale \'");
+            strcat(command, profiles[conv].paths[idx]);
+            strcat(command, "\'");
         }
 
-        strcat(command, " > /dev/null 2>&1" ); /* Hide any errors because it looks better */
+        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
         //printf("Command to apply: %s\n",command);
         system(command);
 
-    }else{
+    } else {
         printf("No matching profiles\n");
     }
     save_profiles();
 }
 
-int list_profiles(){
+int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
-    printf("Current profile: %s\n",curr_wallpaper);
+    printf("Current profile: %s\n", curr_wallpaper);
     printf("Loaded Profiles:\n");
-    for(int idx=0;idx<num_profiles;idx++){
-        printf("%d) %s\n",idx+1,profiles[idx].name);
-        printf("\tMonitor Count: %d\n",profiles[idx].mon_num);
-        for(int path_idx=0;path_idx<profiles[idx].mon_num;path_idx++){
-            printf("\t%s\n",profiles[idx].paths[path_idx]);
+    for (int idx = 0; idx < num_profiles; idx++) {
+        printf("%d) %s\n", idx + 1, profiles[idx].name);
+        printf("\tMonitor Count: %d\n", profiles[idx].mon_num);
+        for (int path_idx = 0; path_idx < profiles[idx].mon_num; path_idx++) {
+            printf("\t%s\n", profiles[idx].paths[path_idx]);
         }
         printf("\n");
     }
@@ -167,25 +226,25 @@ int load_profiles() {
     char line[256];
 
     fgets(line, sizeof(line), config);
-    char* curr_wallpaper_found = strtok(line, ":");
+    char *curr_wallpaper_found = strtok(line, ":");
     curr_wallpaper_found = strtok(NULL, ":");
     for (size_t i = 0, j = 0; curr_wallpaper_found[j] = curr_wallpaper_found[i]; j += !isspace(
             curr_wallpaper_found[i++])); //Trim whitespace
-    strcpy(curr_wallpaper,curr_wallpaper_found);
+    strcpy(curr_wallpaper, curr_wallpaper_found);
     //printf("Found current wallpaper: %s\n",curr_wallpaper);
 
     int config_read = 0;
-    while (!config_read){
+    while (!config_read) {
         struct wallpaper new_wallpaper;
 
-        if(!fgets(line, sizeof(line), config)){
+        if (!fgets(line, sizeof(line), config)) {
             //printf("Trailing whitespace at end of file");
             return 0;
         }
         char *mode_name;
         mode_name = strtok(line, ":");
         //printf("Mode name: %s\n", mode_name);
-        strcpy(new_wallpaper.name,mode_name);
+        strcpy(new_wallpaper.name, mode_name);
 
         fgets(line, sizeof(line), config);
         char *monitor_count = strtok(line, ":");
@@ -199,17 +258,17 @@ int load_profiles() {
             for (size_t i = 0, j = 0; line[j] = line[i]; j += !isspace(
                     line[i++])); /* Magic from a guy on SO, trims whitespace */
             //printf("Wallpaper %d: %s\n", wall_number, line);
-            strcpy(new_wallpaper.paths[wall_number],line);
+            strcpy(new_wallpaper.paths[wall_number], line);
         }
         //printf("\n");
         if (!fgets(line, sizeof(line), config)) {
             config_read = 1;
         }
 
-        strcpy(profiles[num_profiles].name,new_wallpaper.name);
+        strcpy(profiles[num_profiles].name, new_wallpaper.name);
         profiles[num_profiles].mon_num = new_wallpaper.mon_num;
-        for(int idx =0;idx<new_wallpaper.mon_num;idx++){
-            strcpy(profiles[num_profiles].paths[idx],new_wallpaper.paths[idx]);
+        for (int idx = 0; idx < new_wallpaper.mon_num; idx++) {
+            strcpy(profiles[num_profiles].paths[idx], new_wallpaper.paths[idx]);
         }
         num_profiles++;
     }
@@ -219,10 +278,10 @@ int load_profiles() {
     return 0;
 }
 
-int save_profiles(){
+int save_profiles() {
     printf("Saving profiles\n");
     //char *fileName = strcat(getenv("HOME"), "/.config/wallman");
-    char* fileName = getenv("HOME");
+    char *fileName = getenv("HOME");
     //printf("hi! %s - :-)\n",fileName);
     FILE *config = fopen(fileName, "w+"); /* should check the result */
 
@@ -237,22 +296,22 @@ int save_profiles(){
     //fprintf(config,"meow!\n");
     //fputs("meow2!\n",config);
     char current[100] = "";
-    sprintf(current,"current: %s\n",curr_wallpaper);
-    fprintf(config,current);
+    sprintf(current, "current: %s\n", curr_wallpaper);
+    fprintf(config, current);
 
     int profile_idx = 0;
-    while(profile_idx < NUM_PROFILES && strcmp(profiles[profile_idx].name,"undefined name") != 0){
-        char* title = strcat(profiles[profile_idx].name,":\n");
-        fprintf(config,title);
+    while (profile_idx < NUM_PROFILES && strcmp(profiles[profile_idx].name, "undefined name") != 0) {
+        char *title = strcat(profiles[profile_idx].name, ":\n");
+        fprintf(config, title);
         char monitor_count_str[10] = "";
-        sprintf(monitor_count_str,"    monitors: %d\n",profiles[profile_idx].mon_num);
-        fprintf(config,monitor_count_str);
-        for(int idx=0;idx<profiles[profile_idx].mon_num;idx++){
+        sprintf(monitor_count_str, "    monitors: %d\n", profiles[profile_idx].mon_num);
+        fprintf(config, monitor_count_str);
+        for (int idx = 0; idx < profiles[profile_idx].mon_num; idx++) {
             char path[500] = "";
-            sprintf(path,"    %s\n",profiles[profile_idx].paths[idx]);
-            fprintf(config,path);
+            sprintf(path, "    %s\n", profiles[profile_idx].paths[idx]);
+            fprintf(config, path);
         }
-        fprintf(config,"\n");
+        fprintf(config, "\n");
         profile_idx++;
     }
 
@@ -261,29 +320,29 @@ int save_profiles(){
 
 }
 
-int set_path(char profile_name[80], int mon_num, char path[160]){
-    printf("Setting profile: %s on monitor %d to path %s\n",profile_name,mon_num,path);
+int set_path(char profile_name[80], int mon_num, char path[160]) {
+    printf("Setting profile: %s on monitor %d to path %s\n", profile_name, mon_num, path);
     int conv = -1;
     //printf("Word detected\n");
-    for(int idx=0;idx<num_profiles;idx++){
+    for (int idx = 0; idx < num_profiles; idx++) {
         //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-        if(strcmp(profile_name,profiles[idx].name) == 0){
+        if (strcmp(profile_name, profiles[idx].name) == 0) {
             conv = idx;
             break;
         }
     }
-    if(conv == -1){
+    if (conv == -1) {
         printf("No matching profiles\n");
         return 0;
     }
 
-    printf("Identified profile index as %d\n",conv);
+    printf("Identified profile index as %d\n", conv);
 
-    if(mon_num > profiles[conv].mon_num || mon_num <= 0){
+    if (mon_num > profiles[conv].mon_num || mon_num <= 0) {
         printf("Invalid monitor selection\n");
         return 0;
     }
 
-    strcpy(profiles[conv].paths[mon_num-1],path);
+    strcpy(profiles[conv].paths[mon_num - 1], path);
     return 0;
 }
