@@ -31,11 +31,15 @@ int num_profiles;
 
 int main(int argc, char **argv) {
 
-    if (argc < 2) {
+    /*
+     * Yeah I know, that if statement is terrible. Deal with it.
+     */
+    if (argc < 2 || strcmp(argv[1],"help")==0 ) {
         printf("Usage: \n");
         printf("wallman list - list profiles\n");
         printf("wallman current - apply currently set profile\n");
-        printf("wallman set profile_name monitor_num wallpaper_path\n");
+        printf("wallman set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
+        printf("wallman set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
         printf("wallman profile_name - set profile\n");
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
@@ -47,9 +51,10 @@ int main(int argc, char **argv) {
         printf("\t/path/to/wallpaper2.png\n");
         printf("\n");
         printf("Profile_Name_2:\n");
-        printf("\tmonitors:2\n");
+        printf("\tmonitors:3\n");
         printf("\t/path/to/wallpaper1.jpg\n");
         printf("\t/path/to/wallpaper2.png\n");
+        printf("\t/path/to/wallpaper3.png\n");
         return 0;
     }
 
