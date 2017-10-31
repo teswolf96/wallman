@@ -1,0 +1,82 @@
+#!/bin/python
+import os
+wallman = open(os.path.expanduser('~/.config/wallman'),'r')
+polybar = open(os.path.expanduser('~/.config/polybar/config'),'r+')
+
+
+#Parse polybar config
+polybar_top = ""
+polybar_wall = ""
+polybar_bottom = ""
+
+line = polybar.readline()
+while line != "menu-0-0-exec = subl -n ~/.config/wallman\n":
+	#print(line)
+	polybar_top += line
+	line = polybar.readline()
+polybar_top += line
+line = polybar.readline()
+while "[module/" not in line:
+	#print(line)
+	#polybar_wall += line
+	line = polybar.readline()
+
+while line:
+	#print(line)
+	polybar_bottom += line
+	line = polybar.readline()
+
+
+#print(polybar_wall)
+
+#Parse wallman config
+
+class profile:
+	name = ""
+	displayname = ""
+
+profiles = []
+
+wallman.readline() #Eat the first line
+for wall_line in wallman:
+	if ":" in wall_line and "monitors" not in wall_line:
+		new_profile = profile()
+		wall_line.replace("\n","")
+		wall_line.replace(" ","")
+		split = wall_line.split(":")
+		if split[1]!="\n":
+			new_name = split[1].replace(" ","").replace("\n","")
+			if new_name != "ignore":
+				#print("Profile " + split[0] + " called:" + new_name)
+				new_profile.name = split[0]
+				new_profile.displayname = new_name
+		else:
+			#print("Profile " + split[0])
+			new_profile.name = split[0]
+			new_profile.displayname = split[0]
+		if new_profile.name != "":
+			profiles.append(new_profile)
+
+#Now finish up with the polybar config
+
+for idx, prf in enumerate(profiles):
+	menuidx = idx + 1
+
+	#print("menu-0-" + str(menuidx) + " = " + prf.displayname)
+	#print("menu-0-" + str(menuidx) + "-exec = wallman " + prf.name + " &")
+	polybar_wall += "menu-0-" + str(menuidx) + " = " + prf.displayname + "\n"
+	polybar_wall += "menu-0-" + str(menuidx) + "-exec = wallman " + prf.name + " &" + "\n"
+
+#print(polybar_top)
+#print(polybar_wall)
+#print(polybar_bottom)
+polybar_full = polybar_top
+polybar_full += polybar_wall
+polybar_full += "\n"
+polybar_full += polybar_bottom
+
+polybar.close()
+polybar = open(os.path.expanduser('~/.config/polybar/config'),'w')
+polybar.write(polybar_full)
+
+#print("Config Applied To Polybar - Restart Polybar to Continue")
