@@ -395,10 +395,10 @@ int save_profiles() {
 
     fclose(config);
 
-    char command[1024] = "export HOME=/home/"; //lucifer && exec wallybar";
+    char command[1024] = "export HOME=/home/"; //lucifer && exec wallman-genmenu";
     char* user = getenv("USER");
     strcat(command,user);
-    strcat(command," && exec wallybar;");
+    strcat(command," && exec wallman-genmenu;");
     strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
     //printf("Command to apply: %s\n", command);
     system(command);

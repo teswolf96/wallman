@@ -1,0 +1,44 @@
+#!/bin/python
+import os
+wallman = open(os.path.expanduser('~/.config/wallman'), 'r')
+
+#Parse wallman config
+
+class profile:
+	name = ""
+	displayname = ""
+
+profiles = []
+
+wallman.readline() #Eat the first line
+for wall_line in wallman:
+	if ":" in wall_line and "monitors" not in wall_line:
+		new_profile = profile()
+		wall_line.replace("\n","")
+		wall_line.replace(" ","")
+		split = wall_line.split(":")
+		if split[1]!="\n":
+			new_name = split[1].replace(" ","").replace("\n","")
+			if new_name != "ignore":
+				#print("Profile " + split[0] + " called:" + new_name)
+				new_profile.name = split[0]
+				new_profile.displayname = new_name
+		else:
+			#print("Profile " + split[0])
+			new_profile.name = split[0]
+			new_profile.displayname = split[0]
+		if new_profile.name != "":
+			profiles.append(new_profile)
+
+
+
+
+jgmenu_new = ""
+for profile in profiles:
+	jgmenu_new += (profile.displayname + ",wallman " + profile.name + "&\n")
+
+
+jgmenu = open(os.path.expanduser('~/.config/wallman_jgmenu'),'w')
+jgmenu.write(jgmenu_new)
+jgmenu.close()
+#print("Config Applied To Polybar - Restart Polybar to Continue")
