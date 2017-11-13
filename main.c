@@ -17,8 +17,13 @@ int set_path(char profile_name[], int mon_num, char path[]);
 
 int set_profile_disp_name(char* profile_name, char* disp_name);
 
+int get_wallpaper_num(char *profile_name);
+
+char *trimwhitespace(char *str);
+
 struct wallpaper {
     char name[50]; //Profile name
+    char category[256]; //Category name
     char disp_name[50];
     int mon_num; //Number of monitors
     char paths[3][256]; //Number of paths
@@ -44,6 +49,9 @@ int main(int argc, char **argv) {
         printf("wallman set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
         printf("wallman set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
         printf("wallman profile_name - set profile\n");
+        printf("wallman display profile_name display_name - set a wallpaper's display name\n");
+        printf("wallman category category_name profile_name - set a profile's category (not required)\n");
+        /*
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
         printf("---------------\n");
@@ -58,6 +66,7 @@ int main(int argc, char **argv) {
         printf("\t/path/to/wallpaper1.jpg\n");
         printf("\t/path/to/wallpaper2.png\n");
         printf("\t/path/to/wallpaper3.png\n");
+         */
         return 0;
     }
 
@@ -75,6 +84,22 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[1], "list") == 0) {
         list_profiles();
+    } else if (strcmp(argv[1], "category") == 0){
+        if (argc < 4) {
+            printf("Not enough arguments\n");
+            return 0;
+        }
+
+        char cat_name[256];
+        strncpy(cat_name, argv[2],256);
+        char profile_name[50];
+        strncpy(profile_name,argv[3],50);
+
+        int profile_num = get_wallpaper_num(profile_name);
+        strncpy(profiles[profile_num].category,cat_name,256);
+        save_profiles();
+
+        return 0;
 
     } else if (strcmp(argv[1], "set") == 0) {
 
@@ -142,6 +167,26 @@ struct wallpaper get_wallpaper(char *profile_name) {
 
 }
 
+int get_wallpaper_num(char *profile_name) {
+    int conv = -1;
+
+    for (int idx = 0; idx < num_profiles; idx++) {
+        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+        if (strcmp(profile_name, profiles[idx].name) == 0) {
+            conv = idx;
+            break;
+        }
+    }
+    if (conv == -1) {
+        printf("Could not find current profile\n");
+        exit(0);
+    }
+
+    //printf("Current wallpaper is: %s\n",profiles[conv].name);
+    return conv;
+
+}
+
 int set_profile_temp(struct wallpaper temp) {
 
     /*Since we construct the temp profile ourselves, assume it is correct*/
@@ -158,7 +203,7 @@ int set_profile_temp(struct wallpaper temp) {
 }
 
 int set_profile_disp_name(char* profile_name, char* disp_name){
-    printf("Let's change the display profile\n");
+    //printf("Let's change the display profile\n");
     int conv = atoi(profile_name);
     if (conv > 0) { /* User passed in an integer */
         if (conv > num_profiles) {
@@ -252,6 +297,7 @@ int list_profiles() {
     for (int idx = 0; idx < num_profiles; idx++) {
         printf("%d) %s - %s\n", idx + 1, profiles[idx].name, profiles[idx].disp_name);
         printf("\tMonitor Count: %d\n", profiles[idx].mon_num);
+        printf("\tCategory: %s\n",profiles[idx].category);
         for (int path_idx = 0; path_idx < profiles[idx].mon_num; path_idx++) {
             printf("\t%s\n", profiles[idx].paths[path_idx]);
         }
@@ -277,10 +323,13 @@ int load_profiles() {
     char line[256];
 
     fgets(line, sizeof(line), config);
-    char *curr_wallpaper_found = strtok(line, ":");
+    char *curr_wallpaper_found = strtok(line, ":"); //Despite the value never being used, it is required
     curr_wallpaper_found = strtok(NULL, ":");
-    for (size_t i = 0, j = 0; curr_wallpaper_found[j] = curr_wallpaper_found[i]; j += !isspace(
-            curr_wallpaper_found[i++])); //Trim whitespace
+
+    //for (size_t i = 0, j = 0; curr_wallpaper_found[j] = curr_wallpaper_found[i]; j += !isspace(
+    //        curr_wallpaper_found[i++])); //Trim whitespace
+    curr_wallpaper_found = trimwhitespace(curr_wallpaper_found);
+
     strcpy(curr_wallpaper, curr_wallpaper_found);
     //printf("Found current wallpaper: %s\n",curr_wallpaper);
 
@@ -299,8 +348,11 @@ int load_profiles() {
         mode_name = strtok(line, ":");
         //printf("Mode name: %s\n", mode_name);
         disp_name = strtok (NULL, ":");
-        for (size_t i = 0, j = 0; disp_name[j] = disp_name[i]; j += !isspace(
-                disp_name[i++])); //Trim whitespace
+        //printf("disp name: %s\n",disp_name);
+
+        //for (size_t i = 0, j = 0; disp_name[j] = disp_name[i]; j += !isspace(
+        //        disp_name[i++])); //Trim whitespace
+        disp_name = trimwhitespace(disp_name);
 
         if(strcmp(disp_name,"")){
             //printf("%s\n", disp_name);
@@ -318,10 +370,30 @@ int load_profiles() {
         //printf("Number of monitors: %d\n", num_monitors);
         new_wallpaper.mon_num = num_monitors;
 
+        fgets(line, sizeof(line), config);
+        char *category_name = strtok(line, ":");
+        category_name = strtok(NULL, ":");
+
+        //printf("Found un-changed: %s\n", category_name);
+
+        //for (size_t i = 0, j = 0; category_name[j] = category_name[i]; j += !isspace(
+        //        category_name[i++])); //Trim whitespace
+
+        category_name = trimwhitespace(category_name);
+
+        //printf("Found changed: %s\n", category_name);
+
+        //printf("Cat name: %s\n",category_name);
+        char cat_name_save[256];
+        strcpy(cat_name_save,category_name);
+
+
+
         for (int wall_number = 0; wall_number < num_monitors; wall_number++) {
             fgets(line, sizeof(line), config);
-            for (size_t i = 0, j = 0; line[j] = line[i]; j += !isspace(
-                    line[i++])); /* Magic from a guy on SO, trims whitespace */
+            //for (size_t i = 0, j = 0; line[j] = line[i]; j += !isspace(
+             //       line[i++])); /* Magic from a guy on SO, trims whitespace */
+            strncpy(line,trimwhitespace(line),256);
             //printf("Wallpaper %d: %s\n", wall_number, line);
             strcpy(new_wallpaper.paths[wall_number], line);
         }
@@ -332,11 +404,14 @@ int load_profiles() {
 
         strcpy(profiles[num_profiles].name, new_wallpaper.name);
         strcpy(profiles[num_profiles].disp_name,new_wallpaper.disp_name);
+        strcpy(profiles[num_profiles].category,cat_name_save);
+        //printf("Loaded profile: %s with cat: %s\n",profiles[num_profiles].name, profiles[num_profiles].category);
         profiles[num_profiles].mon_num = new_wallpaper.mon_num;
         for (int idx = 0; idx < new_wallpaper.mon_num; idx++) {
             strcpy(profiles[num_profiles].paths[idx], new_wallpaper.paths[idx]);
         }
         num_profiles++;
+        //printf("Looped!\n");
     }
 
     fclose(config);
@@ -383,6 +458,11 @@ int save_profiles() {
         char monitor_count_str[10] = "";
         sprintf(monitor_count_str, "    monitors: %d\n", profiles[profile_idx].mon_num);
         fprintf(config, monitor_count_str);
+
+        char cat_name[256] = "";
+        sprintf(cat_name, "    category: %s\n", profiles[profile_idx].category);
+        fprintf(config, cat_name);
+
         for (int idx = 0; idx < profiles[profile_idx].mon_num; idx++) {
             char path[500] = "";
             sprintf(path, "    %s\n", profiles[profile_idx].paths[idx]);
@@ -430,4 +510,23 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
 
     strcpy(profiles[conv].paths[mon_num - 1], path);
     return 0;
+}
+
+char *trimwhitespace(char *str){
+    char *end;
+
+    // Trim leading space
+    while(isspace((unsigned char)*str)) str++;
+
+    if(*str == 0)  // All spaces?
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator
+    *(end+1) = 0;
+
+    return str;
 }
