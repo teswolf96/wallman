@@ -1,0 +1,12 @@
+current: profile1
+profile1: First Profile
+    monitors: 2
+    category: none
+    /path/to/wallpaper1
+    /path/to/wallpaper2
+
+profile 2: Profile 2
+    monitors: 1
+    category: Random Category
+    /path/to/wallpaper 3.png
+    /path/to the/wallpaper.jpg
