@@ -65,6 +65,7 @@ for category in categories:
         jgmenu_new += "^back()"
 
 
+jgmenu_new += "\n"
 jgmenu = open(os.path.expanduser('~/.config/wallman_jgmenu'),'w')
 jgmenu.write(jgmenu_new)
 jgmenu.close()
