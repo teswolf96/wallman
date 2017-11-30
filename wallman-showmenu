@@ -1,2 +1,2 @@
 #!/bin/bash
-cat ~/.config/wallman_jgmenu | jgmenu --vsimple --icon-size=0 --at-pointer
+cat ~/.config/wallman_jgmenu | jgmenu --simple --icon-size=0 --at-pointer
