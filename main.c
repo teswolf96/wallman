@@ -82,7 +82,8 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    if (strncmp(argv[1], "list", 256) == 0) {
+    if (strncmp(argv[1], "--list", 256) == 0 ||
+		    strncmp(argv[1], "-l", 256) == 0) {
         list_profiles();
     } else if (strncmp(argv[1], "category", 256) == 0) {
         if (argc < 4) {
@@ -101,7 +102,8 @@ int main(int argc, char **argv) {
 
         return 0;
 
-    } else if (strncmp(argv[1], "set", 256) == 0) {
+    } else if (strncmp(argv[1], "--set", 256) == 0 ||
+		    strncmp(argv[1], "-s", 256) == 0) {
 
         if (argc < 4) {
             printf("Not enough arguments\n");
