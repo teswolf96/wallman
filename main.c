@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
         printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
         printf(" profile_name - set profile\n");
-        printf(" -d --display profile_name display_name - set a wallpaper's display name\n");
+        printf(" -d --display profile_name display_name - set a profile's display name\n");
         printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
         /*
         printf("Profiles can be set up in ~/.config/wallman\n");
