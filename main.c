@@ -42,15 +42,17 @@ int main(int argc, char **argv) {
     /*
      * Yeah I know, that if statement is terrible. Deal with it.
      */
-    if (argc < 2 || strncmp(argv[1], "help", 256) == 0) {
-        printf("Usage: \n");
-        printf("wallman list - list profiles\n");
-        printf("wallman current - apply currently set profile\n");
-        printf("wallman set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
-        printf("wallman set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
-        printf("wallman profile_name - set profile\n");
-        printf("wallman display profile_name display_name - set a wallpaper's display name\n");
-        printf("wallman category category_name profile_name - set a profile's category (not required)\n");
+    if (argc < 2 || strncmp(argv[1], "--help", 256) == 0 || 
+		    strncmp(argv[1], "-h", 256) == 0) {
+        printf("Usage: wallman [option(s)] [profile]\n");
+	printf(" The options are: \n");
+        printf(" -l --list \tlist profiles\n");
+        printf(" -c --current - apply currently set profile\n");
+        printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
+        printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
+        printf(" profile_name - set profile\n");
+        printf(" -d --display profile_name display_name - set a wallpaper's display name\n");
+        printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
         /*
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
@@ -85,7 +87,8 @@ int main(int argc, char **argv) {
     if (strncmp(argv[1], "--list", 256) == 0 ||
 		    strncmp(argv[1], "-l", 256) == 0) {
         list_profiles();
-    } else if (strncmp(argv[1], "category", 256) == 0) {
+    } else if (strncmp(argv[1], "--category", 256) == 0 || 
+		    strncmp(argv[1], "-C", 256) == 0) {
         if (argc < 4) {
             printf("Not enough arguments\n");
             return 0;
