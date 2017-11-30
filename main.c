@@ -128,9 +128,11 @@ int main(int argc, char **argv) {
             save_profiles();
         }
 
-    } else if (strncmp(argv[1], "current", 256) == 0) {
+    } else if (strncmp(argv[1], "--current", 256) == 0 || 
+		    strncmp(argv[1], "-c", 256) == 0) {
         set_profile(curr_wallpaper);
-    } else if (strncmp(argv[1], "display", 256) == 0) {
+    } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
+		    strncmp(argv[1], "-d", 256) == 0) {
         if (argc < 4) {
             printf("Not enough arguments");
             return 0;
