@@ -53,7 +53,13 @@ int main(int argc, char **argv) {
         printf(" profile_name - set profile\n");
         printf(" -d --display profile_name display_name - set a profile's display name\n");
         printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
-        /*
+        printf("\n");
+	printf("Examples:\n");
+	printf(" wallman cats    Apply the cats profile\n");
+	printf(" wallman --set cats 1 /path/to/cat.jpg    Set monitor 1 of the cats profile to /path/to/cats.jpg\n");
+	printf(" wallman -C Animals cats    Add the cats profile to the Animals category\n");
+	
+	/*
         printf("Profiles can be set up in ~/.config/wallman\n");
         printf("Example config:\n");
         printf("---------------\n");
