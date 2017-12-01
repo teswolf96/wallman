@@ -42,10 +42,10 @@ int main(int argc, char **argv) {
     /*
      * Yeah I know, that if statement is terrible. Deal with it.
      */
-    if (argc < 2 || strncmp(argv[1], "--help", 256) == 0 || 
-		    strncmp(argv[1], "-h", 256) == 0) {
+    if (argc < 2 || strncmp(argv[1], "--help", 256) == 0 ||
+        strncmp(argv[1], "-h", 256) == 0) {
         printf("Usage: wallman [option(s)] [profile]\n");
-	printf(" The options are: \n");
+        printf(" The options are: \n");
         printf(" -l --list \tlist profiles\n");
         printf(" -c --current - apply currently set profile\n");
         printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
@@ -53,35 +53,36 @@ int main(int argc, char **argv) {
         printf(" profile_name - set profile\n");
         printf(" -d --display profile_name display_name - set a profile's display name\n");
         printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
+        printf(" -D --duplicate profile_name new_profile_name - Create a copy of a profile with a new name\n");
         printf("\n");
-	printf("Examples:\n");
-	printf(" wallman cats    Apply the cats profile\n");
-	printf(" wallman --set cats 1 /path/to/cat.jpg    Set monitor 1 of the cats profile to /path/to/cats.jpg\n");
-	printf(" wallman -C Animals cats    Add the cats profile to the Animals category\n");
-	
-	/*
-        printf("Profiles can be set up in ~/.config/wallman\n");
-        printf("Example config:\n");
-        printf("---------------\n");
-        printf("current: Profile_Name\n");
-        printf("Profile_Name:\n");
-        printf("\tmonitors:2\n");
-        printf("\t/path/to/wallpaper1.jpg\n");
-        printf("\t/path/to/wallpaper2.png\n");
-        printf("\n");
-        printf("Profile_Name_2:\n");
-        printf("\tmonitors:3\n");
-        printf("\t/path/to/wallpaper1.jpg\n");
-        printf("\t/path/to/wallpaper2.png\n");
-        printf("\t/path/to/wallpaper3.png\n");
-         */
+        printf("Examples:\n");
+        printf(" wallman cats    Apply the cats profile\n");
+        printf(" wallman --set cats 1 /path/to/cat.jpg    Set monitor 1 of the cats profile to /path/to/cats.jpg\n");
+        printf(" wallman -C Animals cats    Add the cats profile to the Animals category\n");
+
+        /*
+            printf("Profiles can be set up in ~/.config/wallman\n");
+            printf("Example config:\n");
+            printf("---------------\n");
+            printf("current: Profile_Name\n");
+            printf("Profile_Name:\n");
+            printf("\tmonitors:2\n");
+            printf("\t/path/to/wallpaper1.jpg\n");
+            printf("\t/path/to/wallpaper2.png\n");
+            printf("\n");
+            printf("Profile_Name_2:\n");
+            printf("\tmonitors:3\n");
+            printf("\t/path/to/wallpaper1.jpg\n");
+            printf("\t/path/to/wallpaper2.png\n");
+            printf("\t/path/to/wallpaper3.png\n");
+             */
         return 0;
     }
 
 
     num_profiles = 0;
     for (int idx = 0; idx < NUM_PROFILES; idx++) {
-        strncpy(profiles[idx].name, "undefined name",256);
+        strncpy(profiles[idx].name, "undefined name", 256);
 
     }
 
@@ -91,10 +92,11 @@ int main(int argc, char **argv) {
     }
 
     if (strncmp(argv[1], "--list", 256) == 0 ||
-		    strncmp(argv[1], "-l", 256) == 0) {
+        strncmp(argv[1], "-l", 256) == 0) {
         list_profiles();
-    } else if (strncmp(argv[1], "--category", 256) == 0 || 
-		    strncmp(argv[1], "-C", 256) == 0) {
+        return 0;
+    } else if (strncmp(argv[1], "--category", 256) == 0 ||
+               strncmp(argv[1], "-C", 256) == 0) {
         if (argc < 4) {
             printf("Not enough arguments\n");
             return 0;
@@ -112,7 +114,7 @@ int main(int argc, char **argv) {
         return 0;
 
     } else if (strncmp(argv[1], "--set", 256) == 0 ||
-		    strncmp(argv[1], "-s", 256) == 0) {
+               strncmp(argv[1], "-s", 256) == 0) {
 
         if (argc < 4) {
             printf("Not enough arguments\n");
@@ -136,17 +138,53 @@ int main(int argc, char **argv) {
             set_path(argv[2], mon_num, argv[4]);
             save_profiles();
         }
-
-    } else if (strncmp(argv[1], "--current", 256) == 0 || 
-		    strncmp(argv[1], "-c", 256) == 0) {
+        return 0;
+    } else if (strncmp(argv[1], "--current", 256) == 0 ||
+               strncmp(argv[1], "-c", 256) == 0) {
         set_profile(curr_wallpaper);
+        return 0;
     } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
-		    strncmp(argv[1], "-d", 256) == 0) {
+               strncmp(argv[1], "-d", 256) == 0) {
         if (argc < 4) {
-            printf("Not enough arguments");
+            printf("Not enough arguments\n");
             return 0;
         }
         set_profile_disp_name(argv[2], argv[3]);
+        return 0;
+    } else if (strncmp(argv[1], "--duplicate", 256) == 0 ||
+               strncmp(argv[1], "-D", 256) == 0) {
+        if (argc < 4) {
+            printf("Not enough arguments\n");
+            return 0;
+        }
+
+        int profile_num = get_wallpaper_num(argv[2]);
+
+        strncpy(profiles[num_profiles].name,argv[3],256);
+        profiles[num_profiles].mon_num = profiles[profile_num].mon_num;
+        strncpy(profiles[num_profiles].disp_name,argv[3],256);
+        strncpy(profiles[num_profiles].category,profiles[profile_num].category,256);
+        for(int idx=0;idx<profiles[num_profiles].mon_num;idx++){
+            strncpy(profiles[num_profiles].paths[idx],profiles[profile_num].paths[idx],256);
+        }
+        num_profiles++;
+
+        save_profiles();
+
+        printf("Duplicated %s to %s\n",argv[2],argv[3]);
+
+        return 0;
+
+    } else if (strncmp(argv[1], "--remove", 256) == 0 ||
+               strncmp(argv[1], "-r", 256) == 0) {
+        if (argc < 3) {
+            printf("Not enough arguments\n");
+            return 0;
+        }
+
+
+        return 0;
+
     } else /*if(strncmp(argv[1],"apply") == 0) */{
         if (argc < 2) {
             printf("Not enough arguments\n");
@@ -154,6 +192,7 @@ int main(int argc, char **argv) {
         }
 
         set_profile(argv[1]);
+        return 0;
     }
 
     return 0;
@@ -171,7 +210,7 @@ struct wallpaper get_wallpaper(char *profile_name) {
         }
     }
     if (conv == -1) {
-        printf("Could not find current profile\n");
+        printf("Could not find profile\n");
         exit(0);
     }
 
@@ -191,7 +230,7 @@ int get_wallpaper_num(char *profile_name) {
         }
     }
     if (conv == -1) {
-        printf("Could not find current profile\n");
+        printf("Could not find profile\n");
         exit(0);
     }
 
