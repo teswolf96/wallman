@@ -19,6 +19,8 @@ int set_profile_disp_name(char *profile_name, char *disp_name);
 
 int get_wallpaper_num(char *profile_name);
 
+int delete_profile(int profile_num);
+
 char *trimwhitespace(char *str);
 
 struct wallpaper {
@@ -182,6 +184,11 @@ int main(int argc, char **argv) {
             return 0;
         }
 
+        int remove_profile = get_wallpaper_num(argv[2]);
+
+        delete_profile(remove_profile);
+        save_profiles();
+        printf("Removed profile: %s\n",argv[2]);
 
         return 0;
 
@@ -544,6 +551,26 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
     }
 
     strncpy(profiles[conv].paths[mon_num - 1], path, 256);
+    return 0;
+}
+
+int delete_profile(int remove_idx){
+
+    for(int idx = remove_idx; idx < num_profiles; idx++){
+        //printf("Copying %s over %s\n",profiles[idx+1].name,profiles[idx].name);
+
+        strncpy(profiles[idx].name,profiles[idx+1].name,256);
+        profiles[idx].mon_num = profiles[idx+1].mon_num;
+        strncpy(profiles[idx].disp_name,profiles[idx+1].disp_name,256);
+        strncpy(profiles[idx].category,profiles[idx+1].category,256);
+        for(int jdx=0;jdx<profiles[idx].mon_num;jdx++){
+            strncpy(profiles[idx].paths[jdx],profiles[idx+1].paths[jdx],256);
+        }
+
+    }
+    //Fix num profiles before returning
+    num_profiles--;
+
     return 0;
 }
 
