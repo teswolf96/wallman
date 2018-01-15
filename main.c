@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "config_parse.h"
 
 #define NUM_PROFILES 200 //Does anyone really need more than 200 profiles?
 

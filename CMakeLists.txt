@@ -3,5 +3,5 @@ project(wallman)
 
 set(CMAKE_C_STANDARD 99)
 
-set(SOURCE_FILES main.c)
+set(SOURCE_FILES main.c config_parse.h config_parse.c)
 add_executable(wallman ${SOURCE_FILES})
