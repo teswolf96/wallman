@@ -22,7 +22,6 @@ int get_wallpaper_num(char *profile_name);
 
 int delete_profile(int profile_num);
 
-char *trimwhitespace(char *str);
 
 struct wallpaper {
     char name[256]; //Profile name
@@ -89,7 +88,13 @@ int main(int argc, char **argv) {
 
     }
 
-    int load_status = load_profiles();
+    //int load_status = load_profiles();
+//    printf("Calling new load profile:\n");
+    int load_status = load_profiles_new();
+
+    return 0; //TODO: Remove this once we have profiles
+
+
     if (load_status == -1) {
         return 0;
     }
@@ -368,7 +373,7 @@ int list_profiles() {
 
 int load_profiles() {
 
-    char *fileName = strcat(getenv("HOME"), "/.config/wallman");
+    char *fileName = strcat(getenv("HOME"), "/.config/wallman/default.profile");
     FILE *config = fopen(fileName, "r"); /* should check the result */
 
     if (config == NULL) {
@@ -575,21 +580,3 @@ int delete_profile(int remove_idx){
     return 0;
 }
 
-char *trimwhitespace(char *str) {
-    char *end;
-
-    // Trim leading space
-    while (isspace((unsigned char) *str)) str++;
-
-    if (*str == 0)  // All spaces?
-        return str;
-
-    // Trim trailing space
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char) *end)) end--;
-
-    // Write new null terminator
-    *(end + 1) = 0;
-
-    return str;
-}

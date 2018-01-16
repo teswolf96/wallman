@@ -1,21 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
-int load_profiles_new(){
+typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST , STR} Token_Enum;
 
-    char *fileName = strcat(getenv("HOME"), "/.config/wallman/config");
-    FILE *config = fopen(fileName, "r"); /* should check the result */
+static inline char *stringFromToken(enum NAME f)
+{
+    static const char *strings[] = { "ACTIVE_PROFILE", "CATEGORY", "TITLE", "HIDDEN","PATHLIST", "STR"};
 
-    if (config == NULL) {
-        fileName = "/etc/wallman";
-        config = fopen(fileName, "r");
-        if (config == NULL) {
-            printf("File could not be opened\n");
-            return -1;
-        }
-    }
-
-
-
+    return strings[f];
 }
+
+struct Token{
+    Token_Enum TOKEN_NAME;
+    char* TOKEN_VAL;
+};
+
+int load_profiles_new();
+
+struct Token get_token(char* str);
+
+int is_valid_str_char(char val);
+
+char *trimwhitespace(char *str);
