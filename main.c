@@ -22,13 +22,11 @@ int get_wallpaper_num(char *profile_name);
 
 int delete_profile(int profile_num);
 
-
-
-
 struct wallpaper get_wallpaper(char *profile_name);
 
 int set_profile_temp(struct wallpaper temp);
 
+struct Config config;
 struct wallpaper profiles[NUM_PROFILES];
 char curr_wallpaper[256];
 int num_profiles;
@@ -85,14 +83,18 @@ int main(int argc, char **argv) {
     //int load_status = load_profiles();
 //    printf("Calling new load profile:\n");
     int load_status = 0;
-    load_profiles_new();
+    config = load_profiles_new();
 
-    return 0; //TODO: Remove this once we have profiles
+//    printf("Active Profile: %s\n",config.active_profile);
+//    printf("Current Wallpaper:\n");
+//    print_wallpaper(config.current);
+//    printf("Wallpapers In Profile:\n");
+//    for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
+//        print_wallpaper(config.wallpaper_list[idx]);
+//    }
 
 
-    if (load_status == -1) {
-        return 0;
-    }
+
 
     if (strncmp(argv[1], "--list", 256) == 0 ||
         strncmp(argv[1], "-l", 256) == 0) {
@@ -352,14 +354,15 @@ int set_profile(char *profile_name) {
 
 int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
-    printf("Current profile: %s\n", curr_wallpaper);
+    printf("Current profile: %s\n", config.current.name);
     printf("Loaded Profiles:\n");
-    for (int idx = 0; idx < num_profiles; idx++) {
-        printf("%d) %s - %s\n", idx + 1, profiles[idx].name, profiles[idx].disp_name);
-        printf("\tMonitor Count: %d\n", profiles[idx].mon_num);
-        printf("\tCategory: %s\n", profiles[idx].category);
-        for (int path_idx = 0; path_idx < profiles[idx].mon_num; path_idx++) {
-            printf("\t%s\n", profiles[idx].paths[path_idx]);
+    for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
+
+        printf("%d) %s - %s\n", idx + 1, config.wallpaper_list[idx].name, config.wallpaper_list[idx].disp_name);
+        printf("\tCategory: %s\n", config.wallpaper_list[idx].category);
+
+        for (int path_idx = 0; path_idx < vector_size(config.wallpaper_list[idx].paths); path_idx++) {
+            printf("\t%s\n", config.wallpaper_list[idx].paths[path_idx]);
         }
         printf("\n");
     }

@@ -25,7 +25,7 @@ struct wallpaper {
     char disp_name[256];
     int hidden;
     int mon_num; //Number of monitors
-    char paths[10][256]; //Number of paths
+    char** paths; //Number of paths
 };
 
 struct Config {
@@ -34,14 +34,21 @@ struct Config {
     struct wallpaper* wallpaper_list;
 };
 
+struct return_new_wallpaper {
+    int arr_idx;
+    struct wallpaper return_val;
+};
+
 struct Config load_profiles_new();
 
 struct Token get_token(char* str);
 
 struct Config parse_tokens();
 
-struct wallpaper parse_wallpaper(struct Token vec, int vec_idx);
+struct return_new_wallpaper parse_wallpaper(struct Token* vec, int token_idx);
 
 int is_valid_str_char(char val);
 
 char *trimwhitespace(char *str);
+
+void print_wallpaper(struct wallpaper printme);
