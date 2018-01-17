@@ -23,13 +23,7 @@ int get_wallpaper_num(char *profile_name);
 int delete_profile(int profile_num);
 
 
-struct wallpaper {
-    char name[256]; //Profile name
-    char category[256]; //Category name
-    char disp_name[256];
-    int mon_num; //Number of monitors
-    char paths[3][256]; //Number of paths
-};
+
 
 struct wallpaper get_wallpaper(char *profile_name);
 
@@ -90,7 +84,8 @@ int main(int argc, char **argv) {
 
     //int load_status = load_profiles();
 //    printf("Calling new load profile:\n");
-    int load_status = load_profiles_new();
+    int load_status = 0;
+    load_profiles_new();
 
     return 0; //TODO: Remove this once we have profiles
 
