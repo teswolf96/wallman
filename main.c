@@ -369,102 +369,103 @@ int list_profiles() {
     return 0;
 }
 
-int load_profiles() {
+//int load_profiles() {
+//
+//    char *fileName = strcat(getenv("HOME"), "/.config/wallman/default.profile");
+//    FILE *config = fopen(fileName, "r"); /* should check the result */
+//
+//    if (config == NULL) {
+//        fileName = "/etc/wallman";
+//        config = fopen(fileName, "r");
+//        if (config == NULL) {
+//            printf("File could not be opened\n");
+//            return -1;
+//        }
+//    }
+//
+//    char line[256];
+//
+//    fgets(line, sizeof(line), config);
+//    char *curr_wallpaper_found = strtok(line, ":"); //Despite the value never being used, it is required
+//    curr_wallpaper_found = strtok(NULL, ":");
+//
+//
+//    curr_wallpaper_found = trimwhitespace(curr_wallpaper_found);
+//
+//    strncpy(curr_wallpaper, curr_wallpaper_found, 256);
+//
+//    int config_read = 0;
+//    while (!config_read) {
+//        struct wallpaper new_wallpaper;
+//
+//        //Catch trailing whitespace
+//        if (!fgets(line, sizeof(line), config)) {
+//            return 0;
+//        }
+//
+//        char *mode_name;
+//        char *disp_name;
+//
+//        mode_name = strtok(line, ":");
+//        disp_name = strtok(NULL, ":");
+//
+//        disp_name = trimwhitespace(disp_name);
+//
+//        if (strncmp(disp_name, "", 256)) {
+//            //printf("%s\n", disp_name);
+//            strncpy(new_wallpaper.disp_name, disp_name, 256);
+//        } else {
+//            strncpy(new_wallpaper.disp_name, mode_name, 256);
+//        }
+//
+//        strncpy(new_wallpaper.name, mode_name, 256);
+//
+//        fgets(line, sizeof(line), config);
+//        char *monitor_count = strtok(line, ":");
+//        monitor_count = strtok(NULL, ":");
+//        int num_monitors = atoi(monitor_count);
+//        //printf("Number of monitors: %d\n", num_monitors);
+//        new_wallpaper.mon_num = num_monitors;
+//
+//        fgets(line, sizeof(line), config);
+//        char *category_name = strtok(line, ":");
+//        category_name = strtok(NULL, ":");
+//
+//        category_name = trimwhitespace(category_name);
+//
+//        char cat_name_save[256];
+//        strncpy(cat_name_save, category_name, 256);
+//
+//
+//        for (int wall_number = 0; wall_number < num_monitors; wall_number++) {
+//            fgets(line, sizeof(line), config);
+//            strncpy(line, trimwhitespace(line), 256);
+//            //printf("Wallpaper %d: %s\n", wall_number, line);
+//            strncpy(new_wallpaper.paths[wall_number], line, 256);
+//        }
+//        //printf("\n");
+//        if (!fgets(line, sizeof(line), config)) {
+//            config_read = 1;
+//        }
+//
+//        strncpy(profiles[num_profiles].name, new_wallpaper.name, 256);
+//        strncpy(profiles[num_profiles].disp_name, new_wallpaper.disp_name, 256);
+//        strncpy(profiles[num_profiles].category, cat_name_save, 256);
+//        //printf("Loaded profile: %s with cat: %s\n",profiles[num_profiles].name, profiles[num_profiles].category);
+//        profiles[num_profiles].mon_num = new_wallpaper.mon_num;
+//        for (int idx = 0; idx < new_wallpaper.mon_num; idx++) {
+//            strncpy(profiles[num_profiles].paths[idx], new_wallpaper.paths[idx], 256);
+//        }
+//        num_profiles++;
+//        //printf("Looped!\n");
+//    }
+//
+//    fclose(config);
+//
+//    return 0;
+//}
 
-    char *fileName = strcat(getenv("HOME"), "/.config/wallman/default.profile");
-    FILE *config = fopen(fileName, "r"); /* should check the result */
-
-    if (config == NULL) {
-        fileName = "/etc/wallman";
-        config = fopen(fileName, "r");
-        if (config == NULL) {
-            printf("File could not be opened\n");
-            return -1;
-        }
-    }
-
-    char line[256];
-
-    fgets(line, sizeof(line), config);
-    char *curr_wallpaper_found = strtok(line, ":"); //Despite the value never being used, it is required
-    curr_wallpaper_found = strtok(NULL, ":");
-
-
-    curr_wallpaper_found = trimwhitespace(curr_wallpaper_found);
-
-    strncpy(curr_wallpaper, curr_wallpaper_found, 256);
-
-    int config_read = 0;
-    while (!config_read) {
-        struct wallpaper new_wallpaper;
-
-        //Catch trailing whitespace
-        if (!fgets(line, sizeof(line), config)) {
-            return 0;
-        }
-
-        char *mode_name;
-        char *disp_name;
-
-        mode_name = strtok(line, ":");
-        disp_name = strtok(NULL, ":");
-
-        disp_name = trimwhitespace(disp_name);
-
-        if (strncmp(disp_name, "", 256)) {
-            //printf("%s\n", disp_name);
-            strncpy(new_wallpaper.disp_name, disp_name, 256);
-        } else {
-            strncpy(new_wallpaper.disp_name, mode_name, 256);
-        }
-
-        strncpy(new_wallpaper.name, mode_name, 256);
-
-        fgets(line, sizeof(line), config);
-        char *monitor_count = strtok(line, ":");
-        monitor_count = strtok(NULL, ":");
-        int num_monitors = atoi(monitor_count);
-        //printf("Number of monitors: %d\n", num_monitors);
-        new_wallpaper.mon_num = num_monitors;
-
-        fgets(line, sizeof(line), config);
-        char *category_name = strtok(line, ":");
-        category_name = strtok(NULL, ":");
-
-        category_name = trimwhitespace(category_name);
-
-        char cat_name_save[256];
-        strncpy(cat_name_save, category_name, 256);
-
-
-        for (int wall_number = 0; wall_number < num_monitors; wall_number++) {
-            fgets(line, sizeof(line), config);
-            strncpy(line, trimwhitespace(line), 256);
-            //printf("Wallpaper %d: %s\n", wall_number, line);
-            strncpy(new_wallpaper.paths[wall_number], line, 256);
-        }
-        //printf("\n");
-        if (!fgets(line, sizeof(line), config)) {
-            config_read = 1;
-        }
-
-        strncpy(profiles[num_profiles].name, new_wallpaper.name, 256);
-        strncpy(profiles[num_profiles].disp_name, new_wallpaper.disp_name, 256);
-        strncpy(profiles[num_profiles].category, cat_name_save, 256);
-        //printf("Loaded profile: %s with cat: %s\n",profiles[num_profiles].name, profiles[num_profiles].category);
-        profiles[num_profiles].mon_num = new_wallpaper.mon_num;
-        for (int idx = 0; idx < new_wallpaper.mon_num; idx++) {
-            strncpy(profiles[num_profiles].paths[idx], new_wallpaper.paths[idx], 256);
-        }
-        num_profiles++;
-        //printf("Looped!\n");
-    }
-
-    fclose(config);
-
-    return 0;
-}
-
+//Come back to this later
 int save_profiles() {
     //printf("Saving profiles\n");
     //char *fileName = strcat(getenv("HOME"), "/.config/wallman");
@@ -535,9 +536,9 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
     printf("Setting profile: %s on monitor %d to path %s\n", profile_name, mon_num, path);
     int conv = -1;
     //printf("Word detected\n");
-    for (int idx = 0; idx < num_profiles; idx++) {
+    for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
         //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-        if (strncmp(profile_name, profiles[idx].name, 256) == 0) {
+        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
             conv = idx;
             break;
         }
@@ -549,12 +550,12 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
 
     printf("Identified profile index as %d\n", conv);
 
-    if (mon_num > profiles[conv].mon_num || mon_num <= 0) {
+    if (mon_num > config.wallpaper_list[conv].mon_num || mon_num <= 0) {
         printf("Invalid monitor selection\n");
         return 0;
     }
 
-    strncpy(profiles[conv].paths[mon_num - 1], path, 256);
+    strncpy(config.wallpaper_list[conv].paths[mon_num - 1], path, 256);
     return 0;
 }
 
@@ -572,6 +573,9 @@ int delete_profile(int remove_idx){
         }
 
     }
+
+
+
     //Fix num profiles before returning
     num_profiles--;
 
