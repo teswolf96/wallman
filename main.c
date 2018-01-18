@@ -22,13 +22,17 @@ int set_profile_disp_name(char *profile_name, char *disp_name);
 
 int get_wallpaper_num(char *profile_name);
 
-int delete_profile(int profile_num);
+//int delete_profile(int profile_num);
+
+int delete_profile(struct wallpaper delete_me);
 
 struct wallpaper get_wallpaper(char *profile_name);
 
 int set_profile_temp(struct wallpaper temp);
 
 char* int_to_bool(int bool);
+
+int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 
 struct Config config;
 struct wallpaper profiles[NUM_PROFILES];
@@ -191,12 +195,12 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        int remove_profile = get_wallpaper_num(argv[2]);
+        struct wallpaper remove_profile = get_wallpaper(argv[2]);
 
         delete_profile(remove_profile);
-        save_profiles();
+        //save_profiles();
         printf("Removed profile: %s\n",argv[2]);
-
+        list_profiles();
         return 0;
 
     } else /*if(strncmp(argv[1],"apply") == 0) */{
@@ -496,23 +500,28 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
     return 0;
 }
 
-int delete_profile(int remove_idx){
+int delete_profile(struct wallpaper delete_me){
+//
+//    for(int idx = remove_idx; idx < num_profiles; idx++){
+//        //printf("Copying %s over %s\n",profiles[idx+1].name,profiles[idx].name);
+//
+//        strncpy(profiles[idx].name,profiles[idx+1].name,256);
+//        profiles[idx].mon_num = profiles[idx+1].mon_num;
+//        strncpy(profiles[idx].disp_name,profiles[idx+1].disp_name,256);
+//        strncpy(profiles[idx].category,profiles[idx+1].category,256);
+//        for(int jdx=0;jdx<profiles[idx].mon_num;jdx++){
+//            strncpy(profiles[idx].paths[jdx],profiles[idx+1].paths[jdx],256);
+//        }
+//
+//    }
 
-    for(int idx = remove_idx; idx < num_profiles; idx++){
-        //printf("Copying %s over %s\n",profiles[idx+1].name,profiles[idx].name);
-
-        strncpy(profiles[idx].name,profiles[idx+1].name,256);
-        profiles[idx].mon_num = profiles[idx+1].mon_num;
-        strncpy(profiles[idx].disp_name,profiles[idx+1].disp_name,256);
-        strncpy(profiles[idx].category,profiles[idx+1].category,256);
-        for(int jdx=0;jdx<profiles[idx].mon_num;jdx++){
-            strncpy(profiles[idx].paths[jdx],profiles[idx+1].paths[jdx],256);
+    struct wallpaper* new_vec = NULL;
+    for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
+        if(!wallpapers_equal(config.wallpaper_list[idx],delete_me)){
+            vector_push_back(new_vec,config.wallpaper_list[idx]);
         }
-
     }
-
-
-
+    config.wallpaper_list = new_vec;
     //Fix num profiles before returning
     num_profiles--;
 
@@ -525,4 +534,27 @@ char* int_to_bool(int bool){
     }else{
         return "False";
     }
+}
+
+int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2){
+
+    if(strncmp(wall1.name,wall2.name,256) != 0){
+        return 0;
+    }
+
+    if(strncmp(wall1.category,wall2.category,256) != 0){
+        return 0;
+    }
+
+    if(vector_size(wall1.paths) != vector_size(wall2.paths)){
+        return 0;
+    }
+
+    for(int idx=0;idx < vector_size(wall1.paths);idx++){
+        if(strncmp(wall1.paths[idx],wall2.paths[idx],256) != 0){
+            return 0;
+        }
+    }
+
+    return 1;
 }
