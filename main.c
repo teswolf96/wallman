@@ -203,7 +203,9 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        //set_profile(argv[1]);
+        struct wallpaper apply_me = get_wallpaper(argv[1]);
+        printf("Loaded wallpaper: %s\n",apply_me.name);
+        set_profile(apply_me);
         return 0;
     }
 
@@ -214,9 +216,9 @@ int main(int argc, char **argv) {
 struct wallpaper get_wallpaper(char *profile_name) {
     int conv = -1;
 
-    for (int idx = 0; idx < num_profiles; idx++) {
-        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-        if (strncmp(profile_name, profiles[idx].name, 256) == 0) {
+    for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
+        //printf("Comparing %s to %s\n",profile_name,config.wallpaper_list[idx].name);
+        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
             conv = idx;
             break;
         }
@@ -227,7 +229,7 @@ struct wallpaper get_wallpaper(char *profile_name) {
     }
 
     //printf("Current wallpaper is: %s\n",profiles[conv].name);
-    return profiles[conv];
+    return config.wallpaper_list[conv];
 
 }
 
@@ -364,7 +366,7 @@ int set_profile(struct wallpaper profile){
     }
 
     strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-    //printf("Command to apply: %s\n",command);
+    printf("Command to apply: %s\n",command);
     system(command);
 
 }
