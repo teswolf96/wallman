@@ -28,6 +28,8 @@ struct wallpaper get_wallpaper(char *profile_name);
 
 int set_profile_temp(struct wallpaper temp);
 
+char* int_to_bool(int bool);
+
 struct Config config;
 struct wallpaper profiles[NUM_PROFILES];
 char curr_wallpaper[256];
@@ -373,12 +375,24 @@ int set_profile(struct wallpaper profile){
 
 int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
-    printf("Current profile: %s\n", config.current.name);
+    printf("Active Wallpaper:\n");
+    printf("Profile: %s\n", config.current.name);
+    printf("\tTitle: %s\n",config.current.disp_name);
+    printf("\tCategory: %s\n", config.current.category);
+    printf("\tHidden: %s\n",int_to_bool(config.current.hidden));
+    printf("\tPaths:\n");
+    for (int path_idx = 0; path_idx < vector_size(config.current.paths); path_idx++) {
+        printf("\t\t%s\n", config.current.paths[path_idx]);
+    }
+    printf("\n");
+
+
     printf("Loaded Profiles:\n");
     for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
 
         printf("%d) %s - %s\n", idx + 1, config.wallpaper_list[idx].name, config.wallpaper_list[idx].disp_name);
         printf("\tCategory: %s\n", config.wallpaper_list[idx].category);
+        printf("\tHidden: %s\n",int_to_bool(config.wallpaper_list[idx].hidden));
 
         for (int path_idx = 0; path_idx < vector_size(config.wallpaper_list[idx].paths); path_idx++) {
             printf("\t%s\n", config.wallpaper_list[idx].paths[path_idx]);
@@ -601,3 +615,10 @@ int delete_profile(int remove_idx){
     return 0;
 }
 
+char* int_to_bool(int bool){
+    if(bool){
+        return "True";
+    }else{
+        return "False";
+    }
+}

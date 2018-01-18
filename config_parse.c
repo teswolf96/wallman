@@ -87,7 +87,7 @@ struct Config load_profiles_new() {
         strcat(profileFileName, global_config.active_profile);
         strcat(profileFileName, ".profile");
 
-        printf("Profile File Name: %s\n",profileFileName);
+        printf("Current Profile: %s\n",global_config.active_profile);
 
         FILE *profile_file = fopen(profileFileName, "r"); /* should check the result */
 
@@ -358,7 +358,11 @@ struct return_new_wallpaper parse_wallpaper(struct Token *vec, int token_idx) {
 
                 if(strncmp(vec[token_idx].TOKEN_VAL,"true",6) == 0){
                     new_wall.hidden = 1;
-                }else if(strncmp(vec[token_idx].TOKEN_VAL,"false",6) == 0){
+                }else if(strncmp(vec[token_idx].TOKEN_VAL,"True",6) == 0){
+                    new_wall.hidden = 1;
+                }else if(strncmp(vec[token_idx].TOKEN_VAL,"false",6) == 0) {
+                    new_wall.hidden = 0;
+                }else if(strncmp(vec[token_idx].TOKEN_VAL,"False",6) == 0){
                     new_wall.hidden = 0;
                 }else{
                     new_wall.hidden = 0;
