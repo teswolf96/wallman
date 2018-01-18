@@ -434,10 +434,14 @@ char *trimwhitespace(char *str) {
 
     // Write new null terminator
     *(end + 1) = 0;
-
+    
     return str;
 }
 
+/**
+ * @brief print_wallpaper - Prints a wallpaper to terminal
+ * @param printme - The wallpaper to print
+ */
 void print_wallpaper(struct wallpaper printme){
 
     printf("Profile: %s\n",printme.name);
