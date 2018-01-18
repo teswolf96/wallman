@@ -4,11 +4,11 @@
 #include <ctype.h>
 #include "vector.h"
 
-typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, END, STR} Token_Enum;
+typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, COMMENT, STR} Token_Enum;
 
 static inline char *stringFromToken(enum NAME f)
 {
-    static const char *strings[] = { "ACTIVE_PROFILE", "CATEGORY", "TITLE", "HIDDEN","PATHLIST", "PROFILE", "END", "STR"};
+    static const char *strings[] = { "Active Profile", "Category", "Title", "Hidden","Paths", "Profile", "#", "STR"};
 
     return strings[f];
 }

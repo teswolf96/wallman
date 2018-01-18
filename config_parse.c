@@ -39,10 +39,21 @@ struct Config load_profiles_new() {
         //printf("%c",profile_arr[arr_idx]);
 
         if (profile_arr[arr_idx] == '#') {
+
             while (profile_arr[arr_idx] != '\n') {
                 arr_idx++;
             }
             arr_idx++;
+            int com_len = arr_idx - prev_idx + 1;
+            char comment_str[com_len];
+            int com_idx = 0;
+
+            for (int idx = prev_idx; idx < arr_idx; idx++) {
+                comment_str[com_idx] = profile_arr[idx];
+                com_idx++;
+            }
+            comment_str[com_idx] = 0;
+            printf("Found comment: %s\n",comment_str);
             prev_idx = arr_idx;
             continue;
 
@@ -434,7 +445,7 @@ char *trimwhitespace(char *str) {
 
     // Write new null terminator
     *(end + 1) = 0;
-    
+
     return str;
 }
 
