@@ -12,7 +12,9 @@ int list_profiles();
 
 int save_profiles();
 
-int set_profile(char *profile_name);
+//int set_profile(char *profile_name);
+
+int set_profile(struct wallpaper profile);
 
 int set_path(char profile_name[], int mon_num, char path[]);
 
@@ -146,7 +148,7 @@ int main(int argc, char **argv) {
         return 0;
     } else if (strncmp(argv[1], "--current", 256) == 0 ||
                strncmp(argv[1], "-c", 256) == 0) {
-        set_profile(curr_wallpaper);
+        set_profile(config.current);
         return 0;
     } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
                strncmp(argv[1], "-d", 256) == 0) {
@@ -201,7 +203,7 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        set_profile(argv[1]);
+        //set_profile(argv[1]);
         return 0;
     }
 
@@ -301,55 +303,70 @@ int set_profile_disp_name(char *profile_name, char *disp_name) {
 }
 
 
-int set_profile(char *profile_name) {
-    int conv = atoi(profile_name);
-    if (conv > 0) { /* User passed in an integer */
-        if (conv > num_profiles) {
-            printf("No matching profiles\n");
-            return 0;
-        }
-        strncpy(curr_wallpaper, profile_name, 256);
-        char command[1024] = "feh";
-        for (int idx = 0; idx < profiles[conv - 1].mon_num; idx++) {
-            strcat(command, " --bg-scale \'");
-            strcat(command, profiles[conv - 1].paths[idx]);
-            strcat(command, "\'");
-        }
+//int set_profile(char *profile_name) {
+//    int conv = atoi(profile_name);
+//    if (conv > 0) { /* User passed in an integer */
+//        if (conv > num_profiles) {
+//            printf("No matching profiles\n");
+//            return 0;
+//        }
+//        strncpy(curr_wallpaper, profile_name, 256);
+//        char command[1024] = "feh";
+//        for (int idx = 0; idx < profiles[conv - 1].mon_num; idx++) {
+//            strcat(command, " --bg-scale \'");
+//            strcat(command, profiles[conv - 1].paths[idx]);
+//            strcat(command, "\'");
+//        }
+//
+//        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
+//        //printf("Command to apply: %s\n",command);
+//        system(command);
+//
+//    } else if (conv == 0) { /* User passed in a string or is trying to be tricky >_> */
+//        conv = -1;
+//        //printf("Word detected\n");
+//        for (int idx = 0; idx < num_profiles; idx++) {
+//            //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+//            if (strncmp(profile_name, profiles[idx].name, 256) == 0) {
+//                conv = idx;
+//                break;
+//            }
+//        }
+//        if (conv == -1) {
+//            printf("No matching profiles\n");
+//            return 0;
+//        }
+//        strncpy(curr_wallpaper, profile_name, 256);
+//        char command[1024] = "feh";
+//        for (int idx = 0; idx < profiles[conv].mon_num; idx++) {
+//            strcat(command, " --bg-scale \'");
+//            strcat(command, profiles[conv].paths[idx]);
+//            strcat(command, "\'");
+//        }
+//
+//        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
+//        //printf("Command to apply: %s\n",command);
+//        system(command);
+//
+//    } else {
+//        printf("No matching profiles\n");
+//    }
+//    save_profiles();
+//}
 
-        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-        //printf("Command to apply: %s\n",command);
-        system(command);
+int set_profile(struct wallpaper profile){
 
-    } else if (conv == 0) { /* User passed in a string or is trying to be tricky >_> */
-        conv = -1;
-        //printf("Word detected\n");
-        for (int idx = 0; idx < num_profiles; idx++) {
-            //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-            if (strncmp(profile_name, profiles[idx].name, 256) == 0) {
-                conv = idx;
-                break;
-            }
-        }
-        if (conv == -1) {
-            printf("No matching profiles\n");
-            return 0;
-        }
-        strncpy(curr_wallpaper, profile_name, 256);
-        char command[1024] = "feh";
-        for (int idx = 0; idx < profiles[conv].mon_num; idx++) {
-            strcat(command, " --bg-scale \'");
-            strcat(command, profiles[conv].paths[idx]);
-            strcat(command, "\'");
-        }
-
-        strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-        //printf("Command to apply: %s\n",command);
-        system(command);
-
-    } else {
-        printf("No matching profiles\n");
+    char command[1024] = "feh";
+    for (int idx = 0; idx < profile.mon_num; idx++) {
+        strcat(command, " --bg-scale \'");
+        strcat(command, profile.paths[idx]);
+        strcat(command, "\'");
     }
-    save_profiles();
+
+    strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
+    printf("Command to apply: %s\n",command);
+    system(command);
+
 }
 
 int list_profiles() {
