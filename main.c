@@ -364,7 +364,7 @@ int set_profile(struct wallpaper profile){
     }
 
     strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-    printf("Command to apply: %s\n",command);
+    //printf("Command to apply: %s\n",command);
     system(command);
 
 }
