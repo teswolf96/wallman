@@ -18,6 +18,7 @@ struct Token{
     char TOKEN_VAL[256];
 };
 
+extern struct Token* main_config_tokens;
 
 struct wallpaper {
     char name[256]; //Profile name

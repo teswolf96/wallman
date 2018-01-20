@@ -4,6 +4,8 @@ static struct Config global_config;
 static struct Token *tokens = NULL;
 static int token_idx = 0;
 
+struct Token* main_config_tokens = NULL;
+
 struct Config load_profiles_new() {
 
     char fileName[512];
@@ -86,6 +88,7 @@ struct Config load_profiles_new() {
     }
 
     global_config = parse_tokens();
+    main_config_tokens = tokens;
 
     if(strncmp(global_config.active_profile,"undefined_profile",256) == 0){
         printf("No profile file specified. You can use --set-profile to set it or add it to your config file.\n");

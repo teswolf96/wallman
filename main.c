@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "config_parse.h"
+#include "config_save.h"
 
 //#define NUM_PROFILES 200 //Does anyone really need more than 200 profiles?
 
@@ -11,7 +12,7 @@ int load_profiles();
 int list_profiles();
 
 //int save_profiles();
-
+int set_config_file(char* config_file);
 //int set_profile(char *profile_name);
 
 int set_profile(struct wallpaper profile);
@@ -275,6 +276,13 @@ int set_profile_disp_name(char *profile_name, char *disp_name) {
 
 }
 
+int set_config_file(char* config_file){
+
+
+
+
+    save_main_config();
+}
 
 int set_profile(struct wallpaper profile){
 
