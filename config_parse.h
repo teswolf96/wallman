@@ -1,11 +1,15 @@
+#ifndef CONFIG_PARSE
+#define CONFIG_PARSE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "vector.h"
 
-typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, COMMENT, STR} Token_Enum;
 
+
+typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, COMMENT, STR} Token_Enum;
 static inline char *stringFromToken(enum NAME f)
 {
     static const char *strings[] = { "Active Profile", "Category", "Title", "Hidden","Paths", "Profile", "#", "STR"};
@@ -53,3 +57,5 @@ int is_valid_str_char(char val);
 char *trimwhitespace(char *str);
 
 void print_wallpaper(struct wallpaper printme);
+
+#endif

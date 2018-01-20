@@ -12,7 +12,6 @@ int load_profiles();
 int list_profiles();
 
 //int save_profiles();
-int set_config_file(char* config_file);
 //int set_profile(char *profile_name);
 
 int set_profile(struct wallpaper profile);
@@ -152,7 +151,7 @@ int main(int argc, char **argv) {
             return 0;
         }
         strncpy(config.active_profile,argv[2],256);
-        //set_config_file(argv[2]);
+        save_main_config(config);
         return 0;
     } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
                strncmp(argv[1], "-d", 256) == 0) {
@@ -286,13 +285,6 @@ int set_profile_disp_name(char *profile_name, char *disp_name) {
 
 }
 
-int set_config_file(char* config_file){
-
-
-
-
-    save_main_config();
-}
 
 int set_profile(struct wallpaper profile){
 

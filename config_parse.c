@@ -46,7 +46,21 @@ struct Config load_profiles_new() {
                 arr_idx++;
             }
             arr_idx++;
+            int com_len = arr_idx - prev_idx + 1;
+            char comment[com_len];
+            int sub_idx = 0;
 
+            for (int idx = prev_idx; idx < arr_idx; idx++) {
+                comment[sub_idx] = profile_arr[idx];
+                sub_idx++;
+            }
+            comment[sub_idx] = 0;
+            //char* comment_trim = trimwhitespace(comment);
+            //printf("Comment: %s\n",comment_trim);
+            struct Token comment_tok;
+            comment_tok.TOKEN_NAME = COMMENT;
+            strncpy(comment_tok.TOKEN_VAL,comment,256);
+            vector_push_back(tokens,comment_tok);
             prev_idx = arr_idx;
 
             continue;
@@ -201,6 +215,9 @@ struct Config load_profiles_new() {
 
                         break;
                     }
+                    case COMMENT: {
+                        break;
+                    }
                     default:
                         printf("Expecting profile, got %s\n", tokens[token_idx].TOKEN_VAL);
                 }
@@ -221,32 +238,32 @@ struct Token get_token(char *str) {
     if (strncmp(str, "Active Profile", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = ACTIVE_PROFILE;
-        strncpy(new_tok.TOKEN_VAL, "ACTIVE_PROFILE", 256);
+        strncpy(new_tok.TOKEN_VAL, "Active Profile", 256);
         return new_tok;
     } else if (strncmp(str, "Category", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = CATEGORY;
-        strncpy(new_tok.TOKEN_VAL, "CATEGORY", 256);
+        strncpy(new_tok.TOKEN_VAL, "Category", 256);
         return new_tok;
     } else if (strncmp(str, "Title", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = TITLE;
-        strncpy(new_tok.TOKEN_VAL, "TITLE", 256);
+        strncpy(new_tok.TOKEN_VAL, "Title", 256);
         return new_tok;
     } else if (strncmp(str, "Hidden", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = HIDDEN;
-        strncpy(new_tok.TOKEN_VAL, "HIDDEN", 256);
+        strncpy(new_tok.TOKEN_VAL, "Hidden", 256);
         return new_tok;
     } else if (strncmp(str, "Paths", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = PATHLIST;
-        strncpy(new_tok.TOKEN_VAL, "PATHLIST", 256);
+        strncpy(new_tok.TOKEN_VAL, "Paths", 256);
         return new_tok;
     } else if (strncmp(str, "Profile", strlen(str)) == 0) {
         struct Token new_tok;
         new_tok.TOKEN_NAME = PROFILE;
-        strncpy(new_tok.TOKEN_VAL, "PROFILE", 256);
+        strncpy(new_tok.TOKEN_VAL, "Profile", 256);
         return new_tok;
     } else {
         struct Token new_tok;
@@ -281,6 +298,9 @@ struct Config parse_tokens() {
                 config.current = ret.return_val;
                 //printf("Got new idx: %d\n", token_idx);
                 //print_wallpaper(config.current);
+                break;
+            }
+            case COMMENT:{
                 break;
             }
             default:
