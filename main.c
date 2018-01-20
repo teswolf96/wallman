@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
         printf(" The options are: \n");
         printf(" -l --list \tlist profiles\n");
         printf(" -c --current - apply currently set profile\n");
+        printf(" -p --config - set the config file to use\n");
         printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
         printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
         printf(" profile_name - set profile\n");
@@ -142,6 +143,15 @@ int main(int argc, char **argv) {
     } else if (strncmp(argv[1], "--current", 256) == 0 ||
                strncmp(argv[1], "-c", 256) == 0) {
         set_profile(config.current);
+        return 0;
+    } else if (strncmp(argv[1], "--config", 256) == 0 ||
+               strncmp(argv[1], "-p", 256) == 0) {
+        if (argc < 3) {
+            printf("Not enough arguments\n");
+            return 0;
+        }
+        strncpy(config.active_profile,argv[2],256);
+        //set_config_file(argv[2]);
         return 0;
     } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
                strncmp(argv[1], "-d", 256) == 0) {
@@ -305,7 +315,7 @@ int list_profiles() {
     printf("\n");
 
 
-    printf("Loaded Profiles:\n");
+    printf("Loaded Profiles from file: %s:\n",config.active_profile);
     for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
 
         printf("%d) %s - %s\n", idx + 1, config.wallpaper_list[idx].name, config.wallpaper_list[idx].disp_name);

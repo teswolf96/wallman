@@ -39,22 +39,14 @@ struct Config load_profiles_new() {
         //printf("%c",profile_arr[arr_idx]);
 
         if (profile_arr[arr_idx] == '#') {
-
+            //printf("Found comment\n");
             while (profile_arr[arr_idx] != '\n') {
                 arr_idx++;
             }
             arr_idx++;
-            int com_len = arr_idx - prev_idx + 1;
-            char comment_str[com_len];
-            int com_idx = 0;
 
-            for (int idx = prev_idx; idx < arr_idx; idx++) {
-                comment_str[com_idx] = profile_arr[idx];
-                com_idx++;
-            }
-            comment_str[com_idx] = 0;
-            printf("Found comment: %s\n",comment_str);
             prev_idx = arr_idx;
+
             continue;
 
         }
@@ -135,6 +127,22 @@ struct Config load_profiles_new() {
                         prf_arr_idx++;
                     }
                     prf_arr_idx++;
+
+                    int com_len = prf_arr_idx - prf_prev_idx + 1;
+                    char comment[com_len];
+                    int sub_idx = 0;
+
+                    for (int idx = prf_prev_idx; idx < prf_arr_idx; idx++) {
+                        comment[sub_idx] = profile_file_arr[idx];
+                        sub_idx++;
+                    }
+                    comment[sub_idx] = 0;
+                    //char* comment_trim = trimwhitespace(comment);
+                    //printf("Comment: %s\n",comment_trim);
+                    struct Token comment_tok;
+                    comment_tok.TOKEN_NAME = COMMENT;
+                    strncpy(comment_tok.TOKEN_VAL,comment,256);
+                    vector_push_back(profile_tokens,comment_tok);
                     prf_prev_idx = prf_arr_idx;
                     continue;
 
@@ -405,8 +413,11 @@ struct return_new_wallpaper parse_wallpaper(struct Token *vec, int token_idx) {
                 printf("Got string %s when expecting a token. Trying again.\n",vec[token_idx].TOKEN_VAL);
                 token_idx++;
                 break;
+            case COMMENT:
+                token_idx++;
+                break;
             default:
-                printf("Got invalid token: %s\n", vec[token_idx].TOKEN_NAME);
+                printf("Got invalid token: %s\n", stringFromToken(vec[token_idx].TOKEN_NAME));
                 token_idx++;
         }
 
