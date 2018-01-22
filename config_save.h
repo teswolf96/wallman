@@ -8,6 +8,8 @@
 #include "config_parse.h"
 
 int save_main_config(struct Config curr);
+int save_profile_config(struct Config curr);
+
 
 /***
  *

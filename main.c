@@ -186,6 +186,8 @@ int main(int argc, char **argv) {
 
         struct wallpaper apply_me = get_wallpaper(argv[1]);
         printf("Loaded wallpaper: %s\n",apply_me.name);
+        config.current = apply_me;
+        save_main_config(config);
         set_profile(apply_me);
         return 0;
     }
