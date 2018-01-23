@@ -114,7 +114,7 @@ struct Config load_profiles_new() {
         if (profile_file == NULL) {
             printf("Could not open profile: %s\n",global_config.active_profile);
             printf("Please verify ~/.config/wallman/%s.profile exists and is readable.\n",global_config.active_profile);
-            exit(0);
+            return global_config;
         }else{
 
 
