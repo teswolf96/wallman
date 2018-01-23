@@ -455,10 +455,13 @@ int delete_profile(struct wallpaper delete_me){
 }
 
 char* int_to_bool(int bool){
+    char* str_to_ret;
     if(bool){
-        return "True";
+        str_to_ret = "True";
+        return str_to_ret;
     }else{
-        return "False";
+        str_to_ret = "False";
+        return str_to_ret;
     }
 }
 
