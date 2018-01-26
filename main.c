@@ -465,6 +465,7 @@ char *dynstr(const char *str) {
 }
 
 char* int_to_bool(int bool){
+    char* str_to_ret;
     if(bool){
         return dynstr("True");
     }else{
