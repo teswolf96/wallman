@@ -454,11 +454,21 @@ int delete_profile(struct wallpaper delete_me){
     return 0;
 }
 
+char *dynstr(const char *str) {
+    size_t str_len = strlen(str);
+    char *new_str = (char *)malloc(sizeof(char) * (str_len + 1));
+    if (new_str == NULL)
+        return (char *)-1;
+
+    strncpy(new_str, str, str_len);
+    return new_str;
+}
+
 char* int_to_bool(int bool){
     if(bool){
-        return "True";
+        return dynstr("True");
     }else{
-        return "False";
+        return dynstr("False");
     }
 }
 
