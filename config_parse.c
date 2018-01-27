@@ -98,99 +98,108 @@ struct Config load_profiles_new() {
 
     if(strncmp(global_config.active_profile,"undefined_profile",256) == 0){
         printf("No profile file specified. You can use --set-profile to set it or add it to your config file.\n");
+    }
+
+    fclose(config_file);
+    return global_config;
+}
+
+
+struct Config load_profile_file(struct Config config){
+
+    //They defined a profile, let's see if we can open it.
+
+    char profileFileName[512];
+    strncpy(profileFileName,getenv("HOME"),256); //Get this one first
+    strcat(profileFileName, "/.config/wallman/");
+    strcat(profileFileName, config.active_profile);
+    strcat(profileFileName, ".profile");
+
+    printf("Current Profile: %s\n",config.active_profile);
+
+    FILE *profile_file = fopen(profileFileName, "r"); /* should check the result */
+
+    if (profile_file == NULL) {
+        printf("Could not open profile: %s\n",config.active_profile);
+        printf("Please verify %s exists and is readable.\n",profileFileName);
+        config.wallpaper_list = NULL;
+        return config;
     }else{
-        //They defined a profile, let's see if we can open it.
-
-        char profileFileName[512];
-        strcat(profileFileName,getenv("HOME")); //Get this one first
-        strcat(profileFileName, "/.config/wallman/");
-        strcat(profileFileName, global_config.active_profile);
-        strcat(profileFileName, ".profile");
-
-        printf("Current Profile: %s\n",global_config.active_profile);
-
-        FILE *profile_file = fopen(profileFileName, "r"); /* should check the result */
-
-        if (profile_file == NULL) {
-            printf("Could not open profile: %s\n",global_config.active_profile);
-            printf("Please verify ~/.config/wallman/%s.profile exists and is readable.\n",global_config.active_profile);
-            return global_config;
-        }else{
 
 
-            fseek(profile_file, 0, SEEK_END);
-            long profile_size = ftell(profile_file);
-            fseek(profile_file, 0, SEEK_SET);
+        fseek(profile_file, 0, SEEK_END);
+        long profile_size = ftell(profile_file);
+        fseek(profile_file, 0, SEEK_SET);
 
-            char profile_file_arr[profile_size];
+        char profile_file_arr[profile_size];
 
-            char nxt_prf = (char) fgetc(profile_file);
-            int tmp_idx_prf = 0;
-            while (nxt_prf != EOF) {
-                profile_file_arr[tmp_idx_prf] = nxt_prf;
-                nxt_prf = (char) fgetc(profile_file);
-                tmp_idx_prf++;
-            }
+        char nxt_prf = (char) fgetc(profile_file);
+        int tmp_idx_prf = 0;
+        while (nxt_prf != EOF) {
+            profile_file_arr[tmp_idx_prf] = nxt_prf;
+            nxt_prf = (char) fgetc(profile_file);
+            tmp_idx_prf++;
+        }
 
-            int prf_arr_idx = 0;
-            int prf_prev_idx = 0;
+        int prf_arr_idx = 0;
+        int prf_prev_idx = 0;
 
-            struct Token* profile_tokens = NULL;
+        struct Token* profile_tokens = NULL;
 
-            while (prf_arr_idx < profile_size) { //for each character in the array
-                //printf("%c",profile_arr[arr_idx]);
+        while (prf_arr_idx < profile_size) { //for each character in the array
+            //printf("%c",profile_arr[arr_idx]);
 
-                if (profile_file_arr[prf_arr_idx] == '#') {
-                    while (profile_file_arr[prf_arr_idx] != '\n') {
-                        prf_arr_idx++;
-                    }
+            if (profile_file_arr[prf_arr_idx] == '#') {
+                while (profile_file_arr[prf_arr_idx] != '\n') {
                     prf_arr_idx++;
-
-                    int com_len = prf_arr_idx - prf_prev_idx + 1;
-                    char comment[com_len];
-                    int sub_idx = 0;
-
-                    for (int idx = prf_prev_idx; idx < prf_arr_idx; idx++) {
-                        comment[sub_idx] = profile_file_arr[idx];
-                        sub_idx++;
-                    }
-                    comment[sub_idx] = 0;
-                    //char* comment_trim = trimwhitespace(comment);
-                    //printf("Comment: %s\n",comment_trim);
-                    struct Token comment_tok;
-                    comment_tok.TOKEN_NAME = COMMENT;
-                    strncpy(comment_tok.TOKEN_VAL,comment,256);
-                    vector_push_back(profile_tokens,comment_tok);
-                    prf_prev_idx = prf_arr_idx;
-                    continue;
-
                 }
-
-                if (!is_valid_str_char(profile_file_arr[prf_arr_idx])) {
-                    int sub_len = prf_arr_idx - prf_prev_idx + 1;
-                    char substring[sub_len];
-                    int sub_idx = 0;
-
-                    for (int idx = prf_prev_idx; idx < prf_arr_idx; idx++) {
-                        substring[sub_idx] = profile_file_arr[idx];
-                        sub_idx++;
-                    }
-                    substring[sub_idx] = 0;
-                    char *trimmed_substr = trimwhitespace(substring);
-
-                    if(strlen(trimmed_substr) != 0) {
-                        //printf("Substring: %s\n",trimmed_substr);
-
-                        struct Token meow = get_token(trimmed_substr);
-                        vector_push_back(profile_tokens, meow);
-
-                    }
-                    //arr_idx++;
-                    prf_prev_idx = prf_arr_idx+1;
-                }
-
                 prf_arr_idx++;
+
+                int com_len = prf_arr_idx - prf_prev_idx + 1;
+                char comment[com_len];
+                int sub_idx = 0;
+
+                for (int idx = prf_prev_idx; idx < prf_arr_idx; idx++) {
+                    comment[sub_idx] = profile_file_arr[idx];
+                    sub_idx++;
+                }
+                comment[sub_idx] = 0;
+                //char* comment_trim = trimwhitespace(comment);
+                //printf("Comment: %s\n",comment_trim);
+                struct Token comment_tok;
+                comment_tok.TOKEN_NAME = COMMENT;
+                strncpy(comment_tok.TOKEN_VAL,comment,256);
+                vector_push_back(profile_tokens,comment_tok);
+                prf_prev_idx = prf_arr_idx;
+                continue;
+
             }
+
+            if (!is_valid_str_char(profile_file_arr[prf_arr_idx])) {
+                int sub_len = prf_arr_idx - prf_prev_idx + 1;
+                char substring[sub_len];
+                int sub_idx = 0;
+
+                for (int idx = prf_prev_idx; idx < prf_arr_idx; idx++) {
+                    substring[sub_idx] = profile_file_arr[idx];
+                    sub_idx++;
+                }
+                substring[sub_idx] = 0;
+                char *trimmed_substr = trimwhitespace(substring);
+
+                if(strlen(trimmed_substr) != 0) {
+                    //printf("Substring: %s\n",trimmed_substr);
+
+                    struct Token meow = get_token(trimmed_substr);
+                    vector_push_back(profile_tokens, meow);
+
+                }
+                //arr_idx++;
+                prf_prev_idx = prf_arr_idx+1;
+            }
+
+            prf_arr_idx++;
+        }
 
 //            if(profile_tokens) {
 //                size_t i;
@@ -201,37 +210,34 @@ struct Config load_profiles_new() {
 //                    }
 //                }
 //            }
-            int profile_idx = 0;
-            global_config.wallpaper_list = NULL;
-            while (profile_idx < vector_size(profile_tokens)) {
-                //printf("Switching on: %s\n", stringFromToken(profile_tokens[profile_idx].TOKEN_NAME));
-                switch (profile_tokens[profile_idx].TOKEN_NAME) {
-                    case PROFILE: {
-                        struct return_new_wallpaper ret = parse_wallpaper(profile_tokens, profile_idx);
-                        profile_idx = ret.arr_idx;
-                        //printf("Got new idx: %d\n", profile_idx);
-                        //print_wallpaper(ret.return_val);
-                        vector_push_back(global_config.wallpaper_list,ret.return_val);
+        int profile_idx = 0;
+        config.wallpaper_list = NULL;
+        while (profile_idx < vector_size(profile_tokens)) {
+            //printf("Switching on: %s\n", stringFromToken(profile_tokens[profile_idx].TOKEN_NAME));
+            switch (profile_tokens[profile_idx].TOKEN_NAME) {
+                case PROFILE: {
+                    struct return_new_wallpaper ret = parse_wallpaper(profile_tokens, profile_idx);
+                    profile_idx = ret.arr_idx;
+//                    printf("Got new idx: %d\n", profile_idx);
+//                    print_wallpaper(ret.return_val);
+                    vector_push_back(config.wallpaper_list,ret.return_val);
 
 
-                        break;
-                    }
-                    case COMMENT: {
-                        break;
-                    }
-                    default:
-                        printf("Expecting profile, got %s\n", tokens[token_idx].TOKEN_VAL);
+                    break;
                 }
-                profile_idx++;
-
+                case COMMENT: {
+                    break;
+                }
+                default:
+                    printf("Expecting profile, got %s\n", tokens[token_idx].TOKEN_VAL);
             }
+            profile_idx++;
 
-            fclose(profile_file);
         }
-    }
 
-    fclose(config_file);
-    return global_config;
+        fclose(profile_file);
+    }
+    return config;
 }
 
 struct Token get_token(char *str) {
@@ -317,6 +323,11 @@ struct Config parse_tokens() {
 }
 
 struct return_new_wallpaper parse_wallpaper(struct Token *vec, int token_idx) {
+
+    //printf("Parsing new wallpaper with tokens: ");
+//    for(int idx=0;idx<vector_size(vec);idx++){
+//        printf("%s ",stringFromToken(vec[idx].TOKEN_NAME));
+//    }
 
     struct return_new_wallpaper return_me;
 
@@ -498,4 +509,14 @@ void print_wallpaper(struct wallpaper printme){
     for(int idx=0;idx<printme.mon_num;idx++){
         printf("\t\t%s\n",printme.paths[idx]);
     }
+}
+
+char *dynstr(const char *str) {
+    size_t str_len = strlen(str);
+    char *new_str = (char *)malloc(sizeof(char) * (str_len + 1));
+    if (new_str == NULL)
+        return (char *)-1;
+
+    strncpy(new_str, str, str_len);
+    return new_str;
 }

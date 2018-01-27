@@ -3,6 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 #include "config_parse.h"
+#include <unistd.h>
+
 #include "config_save.h"
 
 //#define NUM_PROFILES 200 //Does anyone really need more than 200 profiles?
@@ -34,6 +36,8 @@ char* int_to_bool(int bool);
 
 int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 
+void print_help();
+
 struct Config config;
 //struct wallpaper profiles[NUM_PROFILES];
 char curr_wallpaper[256];
@@ -41,56 +45,97 @@ int num_profiles;
 
 int main(int argc, char **argv) {
 
-    /*
-     * Yeah I know, that if statement is terrible. Deal with it.
-     */
-    if (argc < 2 || strncmp(argv[1], "--help", 256) == 0 ||
-        strncmp(argv[1], "-h", 256) == 0) {
-        printf("Usage: wallman [option(s)] [profile]\n");
-        printf(" The options are: \n");
-        printf(" -l --list \tlist profiles\n");
-        printf(" -c --current - apply currently set profile\n");
-        printf(" -p --config - set the config file to use\n");
-        printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
-        printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
-        printf(" profile_name - set profile\n");
-        printf(" -d --display profile_name display_name - set a profile's display name\n");
-        printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
-        //printf(" -D --duplicate profile_name new_profile_name - Create a copy of a profile with a new name\n");
-        printf("\n");
-        printf("Examples:\n");
-        printf(" wallman cats    Apply the cats profile\n");
-        printf(" wallman --set cats 1 /path/to/cat.jpg    Set monitor 1 of the cats profile to /path/to/cats.jpg\n");
-        printf(" wallman -C Animals cats    Add the cats profile to the Animals category\n");
+    config.wallpaper_list = NULL;
 
-        /*
-            printf("Profiles can be set up in ~/.config/wallman\n");
-            printf("Example config:\n");
-            printf("---------------\n");
-            printf("current: Profile_Name\n");
-            printf("Profile_Name:\n");
-            printf("\tmonitors:2\n");
-            printf("\t/path/to/wallpaper1.jpg\n");
-            printf("\t/path/to/wallpaper2.png\n");
-            printf("\n");
-            printf("Profile_Name_2:\n");
-            printf("\tmonitors:3\n");
-            printf("\t/path/to/wallpaper1.jpg\n");
-            printf("\t/path/to/wallpaper2.png\n");
-            printf("\t/path/to/wallpaper3.png\n");
-             */
+    if (argc < 2) {
+        print_help();
         return 0;
+    }else if (strncmp(argv[1], "--help", 256) == 0 ||
+              strncmp(argv[1], "-h", 256) == 0) {
+        print_help();
     }
 
 
-//    num_profiles = 0;
-//    for (int idx = 0; idx < NUM_PROFILES; idx++) {
-//        strncpy(profiles[idx].name, "undefined name", 256);
-//
-//    }
+    int list = 0;
+    int set = 0;
+    int set_current = 0;
+    int switch_profile = 0;
+    int save_new_profile = 0;
+    char *profile_to_apply = NULL;
+    char *new_config_file = NULL;
+    int index;
+    int c;
 
-    int load_status = 0;
+    opterr = 0;
+
+    while ((c = getopt (argc, argv, "lcs:p:P:")) != -1)
+        switch (c)
+        {
+            case 'l':
+                list = 1;
+                break;
+            case 'c':
+                set_current = 1;
+                break;
+            case 's':
+                set = 1;
+                profile_to_apply = optarg;
+                break;
+            case 'p':
+                switch_profile = 1;
+                new_config_file = optarg;
+                break;
+            case 'P':
+                switch_profile = 1;
+                save_new_profile = 1;
+                new_config_file = optarg;
+                break;
+            case '?':
+                if (optopt == 'p')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 's')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'P')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (isprint (optopt))
+                    fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                else
+                    fprintf (stderr,
+                             "Unknown option character `\\x%x'.\n",
+                             optopt);
+                return 1;
+            default:
+                abort ();
+        }
+
+    //So this loads the main config file
     config = load_profiles_new();
+
+    //Check if we want to switch profiles
+    //If so, do this before loading the profile file
+    if(switch_profile){
+        printf("Using profile: %s\n",new_config_file);
+        strncpy(config.active_profile,new_config_file,256);
+    }
+
+    //Load the profile file
+    config = load_profile_file(config);
+
+    //These are mutually exclusive. Highest priority is setting a new profile
+    if(set){
+        struct wallpaper apply_profile = get_wallpaper(profile_to_apply);
+        set_profile(apply_profile);
+    }else if(set_current){
+        set_profile(config.current);
+    }
+
+    //List is ALWAYS last
+    if(list){
+        struct Config temp = config;
+        list_profiles();
+    }
+
+    /*
 
     if (strncmp(argv[1], "--list", 256) == 0 ||
         strncmp(argv[1], "-l", 256) == 0) {
@@ -178,7 +223,7 @@ int main(int argc, char **argv) {
         list_profiles();
         return 0;
 
-    } else /*if(strncmp(argv[1],"apply") == 0) */{
+    } else {
         if (argc < 2) {
             printf("Not enough arguments\n");
             return 0;
@@ -192,15 +237,24 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+
+    */
+
     return 0;
 
 }
 
+/***
+ * This function takes the name of a profile and returns the structure
+ * @param profile_name - name of profile to find
+ * @return - return the complete wallpaper
+ */
 struct wallpaper get_wallpaper(char *profile_name) {
     int conv = -1;
 
+    assert(profile_name != NULL);
+
     for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
-        //printf("Comparing %s to %s\n",profile_name,config.wallpaper_list[idx].name);
         if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
             conv = idx;
             break;
@@ -260,6 +314,60 @@ int set_profile_disp_name(char *profile_name, char *disp_name) {
             return 0;
         }
 
+struct wallpaper get_wallpaper(char *profile_name) {
+    int conv = -1;
+
+    for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
+        //printf("Comparing %s to %s\n",profile_name,config.wallpaper_list[idx].name);
+        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
+            conv = idx;
+            break;
+        }
+    }
+    if (conv == -1) {
+        printf("Could not find profile\n");
+        exit(0);
+    }
+
+    //printf("Current wallpaper is: %s\n",profiles[conv].name);
+    return config.wallpaper_list[conv];
+
+}
+
+int get_wallpaper_num(char *profile_name) {
+    int conv = -1;
+
+    for (int idx = 0; idx < num_profiles; idx++) {
+        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
+        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
+            conv = idx;
+            break;
+        }
+    }
+    if (conv == -1) {
+        printf("Could not find profile\n");
+        exit(0);
+    }
+
+    //printf("Current wallpaper is: %s\n",profiles[conv].name);
+    return conv;
+
+}
+
+int set_profile_temp(struct wallpaper temp) {
+
+    /*Since we construct the temp profile ourselves, assume it is correct*/
+    char command[1024] = "feh";
+    for (int idx = 0; idx < temp.mon_num; idx++) {
+        strcat(command, " --bg-scale \'");
+        strcat(command, temp.paths[idx]);
+        strcat(command, "\'");
+    }
+    strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
+    //printf("Command to apply: %s\n", command);
+    system(command);
+
+}
 
     } else if (conv == 0) { /* User passed in a string or is trying to be tricky >_> */
         conv = -1;
@@ -316,8 +424,11 @@ int list_profiles() {
     }
     printf("\n");
 
+    if(config.wallpaper_list == NULL){
+        return 0;
+    }
 
-    printf("Loaded Profiles from file: %s:\n",config.active_profile);
+    printf("Loaded %d Profiles from file: %s\n",(int)vector_size(config.wallpaper_list),config.active_profile);
     for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
 
         printf("%d) %s - %s\n", idx + 1, config.wallpaper_list[idx].name, config.wallpaper_list[idx].disp_name);
@@ -454,15 +565,7 @@ int delete_profile(struct wallpaper delete_me){
     return 0;
 }
 
-char *dynstr(const char *str) {
-    size_t str_len = strlen(str);
-    char *new_str = (char *)malloc(sizeof(char) * (str_len + 1));
-    if (new_str == NULL)
-        return (char *)-1;
 
-    strncpy(new_str, str, str_len);
-    return new_str;
-}
 
 char* int_to_bool(int bool){
     char* str_to_ret;
@@ -494,4 +597,25 @@ int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2){
     }
 
     return 1;
+}
+
+void print_help(){
+    printf("Usage: wallman [option(s)] [profile]\n");
+    printf(" The options are: \n");
+    printf(" -l - list profiles\n");
+    printf(" -c - apply currently set profile\n");
+    printf(" -p - set the config file to use for the command\n");
+    printf(" -P - set the default config file to use\n");
+//    printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
+//    printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
+//    printf(" profile_name - set profile\n");
+//    printf(" -d --display profile_name display_name - set a profile's display name\n");
+//    printf(" -C --category category_name profile_name - set a profile's category (not required)\n");
+//    //printf(" -D --duplicate profile_name new_profile_name - Create a copy of a profile with a new name\n");
+//    printf("\n");
+//    printf("Examples:\n");
+//    printf(" wallman cats    Apply the cats profile\n");
+//    printf(" wallman --set cats 1 /path/to/cat.jpg    Set monitor 1 of the cats profile to /path/to/cats.jpg\n");
+//    printf(" wallman -C Animals cats    Add the cats profile to the Animals category\n");
+    return;
 }

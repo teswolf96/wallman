@@ -46,6 +46,8 @@ struct return_new_wallpaper {
 
 struct Config load_profiles_new();
 
+struct Config load_profile_file(struct Config config);
+
 struct Token get_token(char* str);
 
 struct Config parse_tokens();
@@ -57,5 +59,7 @@ int is_valid_str_char(char val);
 char *trimwhitespace(char *str);
 
 void print_wallpaper(struct wallpaper printme);
+
+char *dynstr(const char *str);
 
 #endif

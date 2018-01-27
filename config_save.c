@@ -36,6 +36,7 @@ int save_main_config(struct Config curr){
         profile_loc = save_profile(curr.current, config, main_config_tokens, profile_loc);
 //    }
 
+    fclose(config);
     return 0;
 
 }
@@ -52,12 +53,12 @@ int save_profile_config(struct Config curr){
     char *file_name = getenv("HOME");
     strncat(file_name,"/.config/wallman/",512);
     strncat(file_name,curr.active_profile,512);
-    strncat(file_name,".profile",512);
+    strncat(file_name,".profile_test",512);
 
     printf("Saving to file: %s\n",file_name);
-//    FILE *config = fopen(file_name, "w+");
-//
-//    //fprintf(config,"meow_2!\n");
+    FILE *config = fopen(file_name, "w+");
+
+    fprintf(config,"meow_2!\n");
 //
 //    int profile_loc = 0;
 //    if(main_config_tokens[0].TOKEN_NAME == ACTIVE_PROFILE){
@@ -71,7 +72,7 @@ int save_profile_config(struct Config curr){
 //        //Move the profile pointer forward twice
 //        profile_loc+=2;
 //    }
-
+    fclose(config);
     return 0;
 
 }
