@@ -45,6 +45,9 @@ int save_main_config(struct Config curr){
 
 int save_profile_config(struct Config curr){
 
+    //This is a vector to store all categories. Used for jgmenu config
+    char** category_list = NULL;
+
     assert(curr.wallpaper_list != NULL);
 
 
@@ -75,6 +78,10 @@ int save_profile_config(struct Config curr){
         }
 
         if(strncmp(curr.wallpaper_list[idx].category,"none",256) != 0){
+
+            //TODO: FUNCTION THAT DOES THIS WITHOUT DUPS
+            vector_push_back(category_list,curr.wallpaper_list[idx].category);
+
             fprintf(config,"\tCategory: ");
             fprintf(config,curr.wallpaper_list[idx].category);
             fprintf(config,"\n");
@@ -98,6 +105,15 @@ int save_profile_config(struct Config curr){
     }
 
     fclose(config);
+
+
+    printf("Found Categories: ");
+    for(int idx=0;idx<vector_size(category_list);idx++){
+        printf("%s ",category_list[idx]);
+    }printf("\n");
+
+
+
     return 0;
 
 }
@@ -237,19 +253,6 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
     return  profile_loc;
 }
 
+void write_jgmenu(struct Config config){
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
     }
 
 
-    //save_profile_config(config);
+    save_profile_config(config);
 
     //List is ALWAYS last
     if(list){
