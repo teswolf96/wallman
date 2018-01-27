@@ -419,7 +419,7 @@ struct return_new_wallpaper parse_wallpaper(struct Token *vec, int token_idx) {
 
                     //strncpy(new_wall.paths[wallpaper_count],vec[token_idx].TOKEN_VAL,256);
                     vector_push_back(new_wall.paths,vec[token_idx].TOKEN_VAL);
-                    //printf("Pushed back: %s into %s\n",vec[token_idx].TOKEN_VAL,new_wall.name);
+                    printf("Pushed back: %s into %s\n",vec[token_idx].TOKEN_VAL,new_wall.name);
                     wallpaper_count++;
                     token_idx++;
                 }
