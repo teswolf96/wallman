@@ -45,34 +45,58 @@ int save_main_config(struct Config curr){
 
 int save_profile_config(struct Config curr){
 
-    assert(main_config_tokens != NULL);
+    assert(curr.wallpaper_list != NULL);
 
-    for(int idx=0;idx<vector_size(main_config_tokens);idx++){
-        printf("%s ",main_config_tokens[idx].TOKEN_VAL);
-    }
+
+//    for(int idx=0;idx<vector_size(main_config_tokens);idx++){
+//        printf("%s ",main_config_tokens[idx].TOKEN_VAL);
+//    }
 
     char *file_name = getenv("HOME");
     strncat(file_name,"/.config/wallman/",512);
     strncat(file_name,curr.active_profile,512);
-    strncat(file_name,".profile_test",512);
+    strncat(file_name,".profile",512);
 
     printf("Saving to file: %s\n",file_name);
     FILE *config = fopen(file_name, "w+");
 
-    fprintf(config,"meow_2!\n");
-//
-//    int profile_loc = 0;
-//    if(main_config_tokens[0].TOKEN_NAME == ACTIVE_PROFILE){
-//        //We want to save an active profile
-//
-//        fprintf(config,main_config_tokens[0].TOKEN_VAL);
-//        fprintf(config,": ");
-//        fprintf(config,curr.active_profile);
-//        fprintf(config,"\n");
-//
-//        //Move the profile pointer forward twice
-//        profile_loc+=2;
-//    }
+
+    for(int idx=0;idx<vector_size(curr.wallpaper_list);idx++){
+
+        fprintf(config,"Profile: ");
+        fprintf(config,curr.wallpaper_list[idx].name);
+        fprintf(config,"\n");
+
+        if(strncmp(curr.wallpaper_list[idx].disp_name,
+                   curr.wallpaper_list[idx].name,256) != 0){
+            fprintf(config,"\tTitle: ");
+            fprintf(config,curr.wallpaper_list[idx].disp_name);
+            fprintf(config,"\n");
+        }
+
+        if(strncmp(curr.wallpaper_list[idx].category,"none",256) != 0){
+            fprintf(config,"\tCategory: ");
+            fprintf(config,curr.wallpaper_list[idx].category);
+            fprintf(config,"\n");
+        }
+
+        if(curr.wallpaper_list[idx].hidden){
+            fprintf(config,"\tHidden: True\n");
+        }
+
+        //Paths
+        fprintf(config,"\tPaths:\n");
+
+        for(int path_idx = 0; path_idx<vector_size(curr.wallpaper_list[idx].paths);path_idx++){
+            fprintf(config,"\t\t");
+            fprintf(config,curr.wallpaper_list[idx].paths[path_idx]);
+            fprintf(config,"\n");
+        }
+
+
+        fprintf(config,"\n");
+    }
+
     fclose(config);
     return 0;
 

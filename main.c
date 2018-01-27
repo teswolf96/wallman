@@ -62,14 +62,16 @@ int main(int argc, char **argv) {
     int switch_profile = 0;
     int save_new_config_file = 0;
     int save_as_current = 0;
+    int delete_profile_arg = 0;
     char *profile_to_apply = NULL;
     char *new_config_file = NULL;
+    char *delete_profile_name = NULL;
     int index;
     int c;
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "lca:p:P:s:")) != -1)
+    while ((c = getopt (argc, argv, "lca:p:P:s:d:")) != -1)
         switch (c)
         {
             case 'l':
@@ -96,6 +98,10 @@ int main(int argc, char **argv) {
                 save_new_config_file = 1;
                 new_config_file = optarg;
                 break;
+            case 'd':
+                delete_profile_arg = 1;
+                delete_profile_name = optarg;
+                break;
             case '?':
                 if (optopt == 'p')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -104,6 +110,8 @@ int main(int argc, char **argv) {
                 else if (optopt == 'P')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 's')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'd')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
                 else if (isprint (optopt))
                     fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -143,116 +151,21 @@ int main(int argc, char **argv) {
         set_profile(config.current);
     }
 
+    if(delete_profile_arg){
+        struct wallpaper delete_me = get_wallpaper(delete_profile_name);
+        delete_profile(delete_me);
+        save_profile_config(config);
+    }
+
+
+
+
     //List is ALWAYS last
     if(list){
         struct Config temp = config;
         list_profiles();
     }
 
-    /*
-
-    if (strncmp(argv[1], "--list", 256) == 0 ||
-        strncmp(argv[1], "-l", 256) == 0) {
-        list_profiles();
-        return 0;
-    } else if (strncmp(argv[1], "--category", 256) == 0 ||
-               strncmp(argv[1], "-C", 256) == 0) {
-        if (argc < 4) {
-            printf("Not enough arguments\n");
-            return 0;
-        }
-
-        char cat_name[256];
-        strncpy(cat_name, argv[2], 256);
-        char profile_name[256];
-        strncpy(profile_name, argv[3], 256);
-
-        int profile_num = get_wallpaper_num(profile_name);
-        strncpy(config.wallpaper_list[profile_num].category, cat_name, 256);
-        //save_profiles();
-
-        return 0;
-
-    } else if (strncmp(argv[1], "--set", 256) == 0 ||
-               strncmp(argv[1], "-s", 256) == 0) {
-
-        if (argc < 4) {
-            printf("Not enough arguments\n");
-            return 0;
-        } else if (argc == 4) {
-
-            //struct wallpaper temp = get_wallpaper(curr_wallpaper);
-
-            int monitor = atoi(argv[2]);
-            monitor--; //Correct indexing because reasons
-            //printf("Applying to monitor: %d\n",monitor);
-            char path[256];
-            strncpy(path, argv[3], 256);
-            strncpy(config.current.paths[monitor], path, 256);
-
-            set_profile_temp(config.current);
-
-
-        } else if (argc == 5) {
-            int mon_num = atoi(argv[3]);
-            set_path(argv[2], mon_num, argv[4]);
-            //save_profiles();
-        }
-        return 0;
-    } else if (strncmp(argv[1], "--current", 256) == 0 ||
-               strncmp(argv[1], "-c", 256) == 0) {
-        set_profile(config.current);
-        return 0;
-    } else if (strncmp(argv[1], "--config", 256) == 0 ||
-               strncmp(argv[1], "-p", 256) == 0) {
-        if (argc < 3) {
-            printf("Not enough arguments\n");
-            return 0;
-        }
-        strncpy(config.active_profile,argv[2],256);
-        save_main_config(config);
-        return 0;
-    } else if (strncmp(argv[1], "--displayname", 256) == 0 ||
-               strncmp(argv[1], "-d", 256) == 0) {
-        if (argc < 4) {
-            printf("Not enough arguments\n");
-            return 0;
-        }
-        set_profile_disp_name(argv[2], argv[3]);
-        return 0;
-
-
-    } else if (strncmp(argv[1], "--remove", 256) == 0 ||
-               strncmp(argv[1], "-r", 256) == 0) {
-        if (argc < 3) {
-            printf("Not enough arguments\n");
-            return 0;
-        }
-
-        struct wallpaper remove_profile = get_wallpaper(argv[2]);
-
-        delete_profile(remove_profile);
-        //save_profiles();
-        printf("Removed profile: %s\n",argv[2]);
-        list_profiles();
-        return 0;
-
-    } else {
-        if (argc < 2) {
-            printf("Not enough arguments\n");
-            return 0;
-        }
-
-        struct wallpaper apply_me = get_wallpaper(argv[1]);
-        printf("Loaded wallpaper: %s\n",apply_me.name);
-        config.current = apply_me;
-        save_main_config(config);
-        set_profile(apply_me);
-        return 0;
-    }
-
-
-    */
 
     return 0;
 
@@ -562,20 +475,8 @@ int set_path(char profile_name[80], int mon_num, char path[160]) {
 }
 
 int delete_profile(struct wallpaper delete_me){
-//
-//    for(int idx = remove_idx; idx < num_profiles; idx++){
-//        //printf("Copying %s over %s\n",profiles[idx+1].name,profiles[idx].name);
-//
-//        strncpy(profiles[idx].name,profiles[idx+1].name,256);
-//        profiles[idx].mon_num = profiles[idx+1].mon_num;
-//        strncpy(profiles[idx].disp_name,profiles[idx+1].disp_name,256);
-//        strncpy(profiles[idx].category,profiles[idx+1].category,256);
-//        for(int jdx=0;jdx<profiles[idx].mon_num;jdx++){
-//            strncpy(profiles[idx].paths[jdx],profiles[idx+1].paths[jdx],256);
-//        }
-//
-//    }
 
+    printf("Deleting profile: %s\n",delete_me.name);
     struct wallpaper* new_vec = NULL;
     for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
         if(!wallpapers_equal(config.wallpaper_list[idx],delete_me)){
