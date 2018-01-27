@@ -283,8 +283,9 @@ int list_profiles() {
         else
             printf("\tHidden: False\n");
 
+        printf("\tPaths:\n");
         for (int path_idx = 0; path_idx < vector_size(config.wallpaper_list[idx].paths); path_idx++) {
-            printf("\t%s\n", config.wallpaper_list[idx].paths[path_idx]);
+            printf("\t\t%s\n", config.wallpaper_list[idx].paths[path_idx]);
         }
         printf("\n");
     }
