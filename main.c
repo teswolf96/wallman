@@ -143,6 +143,8 @@ int main(int argc, char **argv) {
     //These are mutually exclusive. Highest priority is setting a new profile
     if(set){
         struct wallpaper apply_profile = get_wallpaper(profile_to_apply);
+        printf("Setting current profile to %s\n",apply_profile.name);
+        config.current = apply_profile;
         set_profile(apply_profile);
         if(save_as_current){
             save_main_config(config);
@@ -156,7 +158,6 @@ int main(int argc, char **argv) {
         delete_profile(delete_me);
         save_profile_config(config);
     }
-
 
 
     save_profile_config(config);
