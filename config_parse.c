@@ -201,15 +201,6 @@ struct Config load_profile_file(struct Config config){
             prf_arr_idx++;
         }
 
-//            if(profile_tokens) {
-//                size_t i;
-//                for(i = 0; i < vector_size(profile_tokens); ++i) {
-//                    printf("%s\n",stringFromToken(profile_tokens[i].TOKEN_NAME));
-//                    if(profile_tokens[i].TOKEN_NAME == STR){
-//                        printf("%s\n",profile_tokens[i].TOKEN_VAL);
-//                    }
-//                }
-//            }
         int profile_idx = 0;
         config.wallpaper_list = NULL;
         while (profile_idx < vector_size(profile_tokens)) {
@@ -323,11 +314,6 @@ struct Config parse_tokens() {
 }
 
 struct return_new_wallpaper parse_wallpaper(struct Token *vec, int token_idx) {
-
-    //printf("Parsing new wallpaper with tokens: ");
-//    for(int idx=0;idx<vector_size(vec);idx++){
-//        printf("%s ",stringFromToken(vec[idx].TOKEN_NAME));
-//    }
 
     struct return_new_wallpaper return_me;
 
