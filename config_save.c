@@ -11,7 +11,8 @@ int save_main_config(struct Config curr){
 
     printf("Current Profile: %s\n",curr.current.name);
 
-    char *file_name = getenv("HOME");
+    char file_name[256]  = "";
+    strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/config",512);
 
     printf("Saving to file: %s\n",file_name);

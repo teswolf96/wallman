@@ -60,7 +60,8 @@ int main(int argc, char **argv) {
     int set = 0;
     int set_current = 0;
     int switch_profile = 0;
-    int save_new_profile = 0;
+    int save_new_config_file = 0;
+    int save_as_current = 0;
     char *profile_to_apply = NULL;
     char *new_config_file = NULL;
     int index;
@@ -68,7 +69,7 @@ int main(int argc, char **argv) {
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "lcs:p:P:")) != -1)
+    while ((c = getopt (argc, argv, "lca:p:P:s:")) != -1)
         switch (c)
         {
             case 'l':
@@ -77,8 +78,13 @@ int main(int argc, char **argv) {
             case 'c':
                 set_current = 1;
                 break;
+            case 'a':
+                set = 1;
+                profile_to_apply = optarg;
+                break;
             case 's':
                 set = 1;
+                save_as_current = 1;
                 profile_to_apply = optarg;
                 break;
             case 'p':
@@ -87,15 +93,17 @@ int main(int argc, char **argv) {
                 break;
             case 'P':
                 switch_profile = 1;
-                save_new_profile = 1;
+                save_new_config_file = 1;
                 new_config_file = optarg;
                 break;
             case '?':
                 if (optopt == 'p')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-                else if (optopt == 's')
+                else if (optopt == 'a')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'P')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 's')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
                 else if (isprint (optopt))
                     fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -116,6 +124,9 @@ int main(int argc, char **argv) {
     if(switch_profile){
         printf("Using profile: %s\n",new_config_file);
         strncpy(config.active_profile,new_config_file,256);
+        if(save_new_config_file){
+            save_main_config(config);
+        }
     }
 
     //Load the profile file
@@ -125,6 +136,9 @@ int main(int argc, char **argv) {
     if(set){
         struct wallpaper apply_profile = get_wallpaper(profile_to_apply);
         set_profile(apply_profile);
+        if(save_as_current){
+            save_main_config(config);
+        }
     }else if(set_current){
         set_profile(config.current);
     }
@@ -417,7 +431,13 @@ int list_profiles() {
     printf("Profile: %s\n", config.current.name);
     printf("\tTitle: %s\n",config.current.disp_name);
     printf("\tCategory: %s\n", config.current.category);
-    printf("\tHidden: %s\n",int_to_bool(config.current.hidden));
+
+    if(config.current.hidden)
+        printf("\tHidden: True\n");
+    else
+        printf("\tHidden: False\n");
+
+
     printf("\tPaths:\n");
     for (int path_idx = 0; path_idx < vector_size(config.current.paths); path_idx++) {
         printf("\t\t%s\n", config.current.paths[path_idx]);
@@ -433,7 +453,11 @@ int list_profiles() {
 
         printf("%d) %s - %s\n", idx + 1, config.wallpaper_list[idx].name, config.wallpaper_list[idx].disp_name);
         printf("\tCategory: %s\n", config.wallpaper_list[idx].category);
-        printf("\tHidden: %s\n",int_to_bool(config.wallpaper_list[idx].hidden));
+
+        if(config.wallpaper_list[idx].hidden)
+            printf("\tHidden: True\n");
+        else
+            printf("\tHidden: False\n");
 
         for (int path_idx = 0; path_idx < vector_size(config.wallpaper_list[idx].paths); path_idx++) {
             printf("\t%s\n", config.wallpaper_list[idx].paths[path_idx]);
@@ -603,6 +627,7 @@ void print_help(){
     printf("Usage: wallman [option(s)] [profile]\n");
     printf(" The options are: \n");
     printf(" -l - list profiles\n");
+    printf(" -a - apply a profile (Does not set as current)\n");
     printf(" -c - apply currently set profile\n");
     printf(" -p - set the config file to use for the command\n");
     printf(" -P - set the default config file to use\n");
