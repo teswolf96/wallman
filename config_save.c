@@ -55,7 +55,7 @@ int save_profile_config(struct Config curr){
     char *file_name = getenv("HOME");
     strncat(file_name,"/.config/wallman/",512);
     strncat(file_name,curr.active_profile,512);
-    strncat(file_name,".profile",512);
+    strncat(file_name,".profile_test",512);
 
     printf("Saving to file: %s\n",file_name);
     FILE *config = fopen(file_name, "w+");
