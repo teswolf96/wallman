@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
     }
 
 
-    save_profile_config(config);
+    //save_profile_config(config);
 
     //List is ALWAYS last
     if(list){
@@ -457,6 +457,7 @@ void print_help(){
     printf(" -c - apply currently set profile\n");
     printf(" -p - set the config file to use for the command\n");
     printf(" -P - set the default config file to use\n");
+    printf(" -d - delete a profile\n");
 //    printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
 //    printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
 //    printf(" profile_name - set profile\n");
