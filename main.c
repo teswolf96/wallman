@@ -453,6 +453,7 @@ void print_help(){
     printf(" The options are: \n");
     printf(" -l - list profiles\n");
     printf(" -a - apply a profile (Does not set as current)\n");
+    printf(" -s - apply a profile and set as current\n");
     printf(" -c - apply currently set profile\n");
     printf(" -p - set the config file to use for the command\n");
     printf(" -P - set the default config file to use\n");
