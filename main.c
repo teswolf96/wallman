@@ -234,7 +234,11 @@ int set_profile_temp(struct wallpaper temp) {
 }
 
 
-
+/**
+ * Uses feh to set a background
+ * @param profile - profile to apply
+ * @return - this should probably return a status code or something
+ */
 int set_profile(struct wallpaper profile){
 
     char command[1024] = "feh";
@@ -248,8 +252,13 @@ int set_profile(struct wallpaper profile){
     //printf("Command to apply: %s\n",command);
     system(command);
 
+    return 0;
 }
 
+/**
+ * List all currently loaded profiles
+ * @return - doesn't really return anything, but just in case
+ */
 int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
     printf("Active Wallpaper:\n");
@@ -360,6 +369,7 @@ int list_profiles() {
 //
 //}
 
+//TODO: Make this work with the new system
 int set_path(char profile_name[80], int mon_num, char path[160]) {
     printf("Setting profile: %s on monitor %d to path %s\n", profile_name, mon_num, path);
     int conv = -1;
