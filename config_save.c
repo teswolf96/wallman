@@ -287,7 +287,7 @@ void write_jgmenu(struct Config config, char** categories){
     }
 
     fprintf(jgmenu_script,"#!/bin/sh\n"
-            "cat ~/.config/wallman/jgmenu | jgmenu --simple --icon-size=0");
+            "cat ~/.config/wallman/jgmenu | jgmenu --vsimple --icon-size=0 --at-pointer=1");
 
     char mode[] = "755";
     chmod(file_name_script,S_IRWXU);
