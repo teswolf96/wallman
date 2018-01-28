@@ -311,12 +311,29 @@ void write_jgmenu(struct Config config, char** categories){
         }
     }
 
+    for(int idx=0;idx<vector_size(categories);idx++){
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,",^checkout(");
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,")\n");
+    }
+
 
    for(int idx=0;idx<vector_size(categories);idx++){
-
+       fprintf(jgmenu,categories[idx]);
+       fprintf(jgmenu,",^tag(");
+       fprintf(jgmenu,categories[idx]);
+       fprintf(jgmenu,")\n");
        for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
-
+           if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0){
+               fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+               fprintf(jgmenu,",wallman -s ");
+               fprintf(jgmenu,config.wallpaper_list[jdx].name);
+               fprintf(jgmenu,"&");
+               fprintf(jgmenu,"\n");
+           }
        }
+       fprintf(jgmenu,"^back()\n");
 
    }
 
