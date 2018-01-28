@@ -306,7 +306,7 @@ void write_jgmenu(struct Config config, char** categories){
     }
 
     for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
-        if(strncmp(config.wallpaper_list[jdx].category,"none",256)==0){
+        if(strncmp(config.wallpaper_list[jdx].category,"none",256)==0 && !config.wallpaper_list[jdx].hidden){
             //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
             fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
             fprintf(jgmenu,",wallman -s ");
@@ -330,7 +330,7 @@ void write_jgmenu(struct Config config, char** categories){
        fprintf(jgmenu,categories[idx]);
        fprintf(jgmenu,")\n");
        for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
-           if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0){
+           if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0 && !config.wallpaper_list[jdx].hidden){
                //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
                fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
                fprintf(jgmenu,",wallman -s ");
