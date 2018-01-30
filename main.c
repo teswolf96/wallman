@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "config_parse.h"
 #include <unistd.h>
+#include <getopt.h>
 
 #include "config_save.h"
 
@@ -38,6 +39,8 @@ int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 
 void print_help();
 
+static int verbose_flag;
+
 struct Config config;
 //struct wallpaper profiles[NUM_PROFILES];
 char curr_wallpaper[256];
@@ -71,9 +74,36 @@ int main(int argc, char **argv) {
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "lca:p:P:s:d:")) != -1)
-        switch (c)
-        {
+
+    //while ((c = getopt (argc, argv, "lca:p:P:s:d:")) != -1)
+    while(1) {
+        static struct option long_options[] =
+                {
+                        /* These options set a flag. */
+                        {"verbose", no_argument,       &verbose_flag, 1},
+                        {"brief",   no_argument,       &verbose_flag, 0},
+                        /* These options don’t set a flag.
+                           We distinguish them by their indices. */
+                        {"list",     no_argument,       0, 'l'},
+                        {"current",  no_argument,       0, 'c'},
+                        {"apply",  required_argument, 0, 'a'},
+                        {"set",  required_argument, 0, 's'},
+                        {"temp-profile",    required_argument, 0, 'p'},
+                        {"set-profile",    required_argument, 0, 'P'},
+                        {"delete",    required_argument, 0, 'd'},
+                        {0, 0, 0, 0}
+                };
+        /* getopt_long stores the option index here. */
+        int option_index = 0;
+
+        c = getopt_long (argc, argv, "lca:p:P:s:d:",
+                         long_options, &option_index);
+
+
+        if (c == -1)
+            break;
+
+        switch (c) {
             case 'l':
                 list = 1;
                 break;
@@ -104,25 +134,26 @@ int main(int argc, char **argv) {
                 break;
             case '?':
                 if (optopt == 'p')
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'a')
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'P')
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 's')
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'd')
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (isprint (optopt))
-                    fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
                 else
-                    fprintf (stderr,
-                             "Unknown option character `\\x%x'.\n",
-                             optopt);
+                    fprintf(stderr,
+                            "Unknown option character `\\x%x'.\n",
+                            optopt);
                 return 1;
             default:
-                abort ();
+                abort();
         }
+    }
 
     //So this loads the main config file
     config = load_profiles_new();
