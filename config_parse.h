@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include "vector.h"
 
-
+extern int verbose_flag;
 
 typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, COMMENT, STR} Token_Enum;
 static inline char *stringFromToken(enum NAME f)

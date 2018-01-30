@@ -115,7 +115,8 @@ struct Config load_profile_file(struct Config config){
     strcat(profileFileName, config.active_profile);
     strcat(profileFileName, ".profile");
 
-    printf("Current Profile: %s\n",config.active_profile);
+    if(verbose_flag)
+        printf("Current Profile: %s\n",config.active_profile);
 
     FILE *profile_file = fopen(profileFileName, "r"); /* should check the result */
 

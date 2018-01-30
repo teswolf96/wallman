@@ -39,7 +39,7 @@ int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 
 void print_help();
 
-static int verbose_flag;
+int verbose_flag = 0;
 
 struct Config config;
 //struct wallpaper profiles[NUM_PROFILES];
@@ -77,11 +77,11 @@ int main(int argc, char **argv) {
         static struct option long_options[] =
                 {
                         /* These options set a flag. */
-                        {"verbose", no_argument,       &verbose_flag, 1},
                         {"brief",   no_argument,       &verbose_flag, 0},
                         /* These options don’t set a flag.
                            We distinguish them by their indices. */
                         {"help",     no_argument,       0, 'h'},
+                        {"verbose",     no_argument,       0, 'v'},
                         {"list",     no_argument,       0, 'l'},
                         {"current",  no_argument,       0, 'c'},
                         {"apply",  required_argument, 0, 'a'},
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hlca:p:P:s:d:",
+        c = getopt_long (argc, argv, "vhlca:p:P:s:d:",
                          long_options, &option_index);
 
 
@@ -102,6 +102,9 @@ int main(int argc, char **argv) {
             break;
 
         switch (c) {
+            case 'v':
+                verbose_flag = 1;
+                break;
             case 'h':
                 print_help_arg = 1;
                 break;

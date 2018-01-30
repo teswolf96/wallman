@@ -9,13 +9,16 @@ int save_main_config(struct Config curr){
 //        printf("%s ",main_config_tokens[idx].TOKEN_VAL);
 //    }
 
-    printf("Current Profile: %s\n",curr.current.name);
+    if(verbose_flag)
+        printf("Saving Current Profile: %s\n",curr.current.name);
 
     char file_name[256]  = "";
     strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/config",512);
 
-    printf("Saving to file: %s\n",file_name);
+    if(verbose_flag)
+        printf("Saving to file: %s\n",file_name);
+
     FILE *config = fopen(file_name, "w+");
 
     //fprintf(config,"meow_2!\n");
@@ -61,7 +64,8 @@ int save_profile_config(struct Config curr){
     strncat(file_name,curr.active_profile,512);
     strncat(file_name,".profile",512);
 
-    printf("Saving to file: %s\n",file_name);
+    if(verbose_flag)
+        printf("Saving to file: %s\n",file_name);
     FILE *config = fopen(file_name, "w+");
 
 
@@ -108,10 +112,10 @@ int save_profile_config(struct Config curr){
     fclose(config);
 
 
-    printf("Found Categories: ");
-    for(int idx=0;idx<vector_size(category_list);idx++){
-        printf("%s ",category_list[idx]);
-    }printf("\n");
+//    printf("Found Categories: ");
+//    for(int idx=0;idx<vector_size(category_list);idx++){
+//        printf("%s ",category_list[idx]);
+//    }printf("\n");
 
     write_jgmenu(curr,category_list);
 
@@ -255,6 +259,7 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
     return  profile_loc;
 }
 
+
 char** vector_pushback_unique(char** vector, char* str){
 
     int found = 0;
@@ -278,26 +283,34 @@ void write_jgmenu(struct Config config, char** categories){
     strncpy(file_name_script,getenv("HOME"),256);
     strncat(file_name_script,"/.config/wallman/jgmenu_run",512);
 
-    printf("Writing jgmenu script: %s\n",file_name_script);
-    FILE *jgmenu_script = fopen(file_name_script, "w+");
+    if( access( file_name_script, F_OK ) != -1 ) {
+        //This allows the user to modify the script and prevent it from being overwritten
+        if (verbose_flag)
+            printf("Script already exists, skipping\n");
+    }else {
+        if (verbose_flag)
+            printf("Writing jgmenu script: %s\n", file_name_script);
+        FILE *jgmenu_script = fopen(file_name_script, "w+");
 
-    if(jgmenu_script == NULL){
-        printf("Error opening %s\n",file_name_script);
-        return;
+        if (jgmenu_script == NULL) {
+            printf("Error opening %s\n", file_name_script);
+            return;
+        }
+
+        fprintf(jgmenu_script, "#!/bin/sh\n"
+                "cat ~/.config/wallman/jgmenu | jgmenu --vsimple --icon-size=0 --at-pointer=1");
+
+        char mode[] = "755";
+        chmod(file_name_script, S_IRWXU);
+        fclose(jgmenu_script);
     }
-
-    fprintf(jgmenu_script,"#!/bin/sh\n"
-            "cat ~/.config/wallman/jgmenu | jgmenu --vsimple --icon-size=0 --at-pointer=1");
-
-    char mode[] = "755";
-    chmod(file_name_script,S_IRWXU);
-    fclose(jgmenu_script);
 
     char file_name[256] = "";
     strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/jgmenu",512);
 
-    printf("Writing jgmenu file: %s\n",file_name);
+    if(verbose_flag)
+        printf("Writing jgmenu file: %s\n",file_name);
     FILE *jgmenu = fopen(file_name, "w+");
 
     if(jgmenu == NULL){
