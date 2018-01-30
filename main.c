@@ -35,6 +35,8 @@ int set_profile_temp(struct wallpaper temp);
 
 int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_path);
 
+int create_new_profile(char* name, char* title, char* category, int hidden, char** paths);
+
 int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 
 void print_help();
@@ -65,9 +67,21 @@ int main(int argc, char **argv) {
     char *profile_to_apply = NULL;
     char *new_config_file = NULL;
     char *delete_profile_name = NULL;
-    char *wall_path = NULL;
+    char **wall_path = NULL;
     char *profile_to_modify = NULL;
     int set_new_wall_path = 0;
+
+    int new_profile = 0;
+    char* new_profile_name = NULL;
+
+    int set_hidden = 0;
+    char* hidden_val = NULL;
+
+    int set_title = 0;
+    char* title_val = NULL;
+
+    int set_category = 0;
+    char* category_val = NULL;
 
     int index;
     int print_help_arg = 0;
@@ -97,12 +111,16 @@ int main(int argc, char **argv) {
                         {"wallpaper",    required_argument, 0, 'w'},
                         {"monitor",    required_argument, 0, 'm'},
                         {"profile",    required_argument, 0, 'p'},
+                        {"new",    required_argument, 0, 'n'},
+                        {"hidden",    required_argument, 0, 'H'},
+                        {"title",    required_argument, 0, 't'},
+                        {"category",    required_argument, 0, 'C'},
                         {0, 0, 0, 0}
                 };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "vhlca:f:F:s:d:m:w:p:",
+        c = getopt_long (argc, argv, "vhlca:f:F:s:d:m:w:p:n:t:C:H:",
                          long_options, &option_index);
 
 
@@ -162,9 +180,37 @@ int main(int argc, char **argv) {
                 break;
             case 'w':
                 set_new_wall_path = 1;
-                wall_path = optarg;
+                vector_push_back(wall_path,optarg);
                 if(verbose_flag){
-                    printf("Got wallpaper path arg: %s\n",wall_path);
+                    printf("Got wallpaper path arg: %s\n",wall_path[vector_size(wall_path)-1]);
+                }
+                break;
+            case 'n':
+                new_profile = 1;
+                new_profile_name = optarg;
+                if(verbose_flag){
+                    printf("Creating new profile: %s\n",new_profile_name);
+                }
+                break;
+            case 'H':
+                set_hidden = 1;
+                hidden_val = optarg;
+                if(verbose_flag){
+                    printf("Setting hidden to: %s\n",hidden_val);
+                }
+                break;
+            case 't':
+                set_title = 1;
+                title_val = optarg;
+                if(verbose_flag){
+                    printf("Setting title to: %s\n",title_val);
+                }
+                break;
+            case 'C':
+                set_category = 1;
+                category_val = optarg;
+                if(verbose_flag){
+                    printf("Setting category to: %s\n",category_val);
                 }
                 break;
             case '?':
@@ -181,6 +227,14 @@ int main(int argc, char **argv) {
                 else if (optopt == 'm')
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'p')
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'n')
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'C')
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 't')
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'H')
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (isprint (optopt))
                     fprintf(stderr, "Unknown option `-%c'.\n", optopt);
@@ -214,9 +268,52 @@ int main(int argc, char **argv) {
     //Load the profile file
     config = load_profile_file(config);
 
+    //Creating a new profile is important
+
+    if(new_profile){
+
+        //Check what we have
+        if(verbose_flag){
+            printf("Creating new profile named %s\n",new_profile_name);
+        }
+
+        int hidden = 0;
+        if(set_hidden){
+            if(strncmp(hidden_val,"true",256) == 0 || strncmp(hidden_val,"True",256) == 0){
+                hidden = 1;
+                if(verbose_flag){
+                    printf("Setting hidden to true\n");
+                }
+            }
+        }
+        printf("New profile hidden: %d\n",hidden);
+
+        char* category = "none";
+        if(set_category){
+            category = category_val;
+        }
+        printf("New profile category: %s\n",category);
+
+        char* title = "none";
+        if(set_title){
+            title = title_val;
+        }
+        printf("New profile title: %s\n",title);
+
+        if(wall_path == NULL){
+            printf("Please provide at least one wallpaper for your new profile.\n");
+            exit(0);
+        }
+        create_new_profile(new_profile_name,title,category,hidden,wall_path);
+        save_main_config(config);
+        save_profile_config(config);
+
+    }
+
+
     //Make modifications before setting
 
-    if(set_new_wall_path){
+    if(set_new_wall_path && !new_profile){
         int modify_current = 0;
         //Default to current
         struct wallpaper modify_me = config.current;
@@ -253,21 +350,20 @@ int main(int argc, char **argv) {
             modifying_currently_applied = wallpapers_equal(config.current,modify_me);
         }
 
-        set_wallpaper_path(modify_current,profile_to_modify,monitor,wall_path);
+        set_wallpaper_path(modify_current,profile_to_modify,monitor,wall_path[0]);
 
         if(modifying_currently_applied){
             printf("Modifying currently applied profile\n");
-            set_wallpaper_path(1,profile_to_modify,monitor,wall_path);
+            set_wallpaper_path(1,profile_to_modify,monitor,wall_path[0]);
         }
 
         if(modify_current || modifying_currently_applied){
             //Re-apply current with changes
             set_current = 1;
         }
+        save_main_config(config);
         save_profile_config(config);
     }
-
-
 
     //These are mutually exclusive. Highest priority is setting a new profile
     if(set){
@@ -545,6 +641,18 @@ int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_
 
 }
 
+int create_new_profile(char* name, char* title, char* category, int hidden, char** paths){
+
+    struct wallpaper new;
+    strncpy(new.name,name,256);
+    strncpy(new.disp_name,title,256);
+    strncpy(new.category,category,256);
+    new.hidden = hidden;
+    new.paths = paths;
+    vector_push_back(config.wallpaper_list,new);
+}
+
+
 int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2){
 
     if(strncmp(wall1.name,wall2.name,256) != 0){
@@ -578,8 +686,11 @@ void print_help(){
     printf(" -f --temp-config - set the config file to use for the command\n");
     printf(" -F --set-config - set the default config file to use\n");
     printf(" -d --delete - delete a profile\n");
-    printf(" -m --monitor - set the monitor to modify\n");
     printf(" -p --profile - set the profile to modify\n");
+    printf(" -n --new - Create a new profile\n");
+    printf(" -t --title - set the profile to modify\n");
+    printf(" -C --category - set the profile to modify\n");
+    printf(" -H --hidden - set the monitor to modify\n");
     printf(" -w --wallpaper - set the path to a wallpaper\n"
                    "\tIf no profile is set, this will change only your current profile\n");
 
