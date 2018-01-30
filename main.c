@@ -53,11 +53,7 @@ int main(int argc, char **argv) {
     if (argc < 2) {
         print_help();
         return 0;
-    }else if (strncmp(argv[1], "--help", 256) == 0 ||
-              strncmp(argv[1], "-h", 256) == 0) {
-        print_help();
     }
-
 
     int list = 0;
     int set = 0;
@@ -70,6 +66,7 @@ int main(int argc, char **argv) {
     char *new_config_file = NULL;
     char *delete_profile_name = NULL;
     int index;
+    int print_help_arg = 0;
     int c;
 
     opterr = 0;
@@ -84,6 +81,7 @@ int main(int argc, char **argv) {
                         {"brief",   no_argument,       &verbose_flag, 0},
                         /* These options don’t set a flag.
                            We distinguish them by their indices. */
+                        {"help",     no_argument,       0, 'h'},
                         {"list",     no_argument,       0, 'l'},
                         {"current",  no_argument,       0, 'c'},
                         {"apply",  required_argument, 0, 'a'},
@@ -96,7 +94,7 @@ int main(int argc, char **argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "lca:p:P:s:d:",
+        c = getopt_long (argc, argv, "hlca:p:P:s:d:",
                          long_options, &option_index);
 
 
@@ -104,6 +102,9 @@ int main(int argc, char **argv) {
             break;
 
         switch (c) {
+            case 'h':
+                print_help_arg = 1;
+                break;
             case 'l':
                 list = 1;
                 break;
@@ -151,8 +152,12 @@ int main(int argc, char **argv) {
                             optopt);
                 return 1;
             default:
-                abort();
+                continue;
         }
+    }
+
+    if(print_help_arg){
+        print_help();
     }
 
     //So this loads the main config file
@@ -174,7 +179,8 @@ int main(int argc, char **argv) {
     //These are mutually exclusive. Highest priority is setting a new profile
     if(set){
         struct wallpaper apply_profile = get_wallpaper(profile_to_apply);
-        printf("Setting current profile to %s\n",apply_profile.name);
+        if(verbose_flag)
+            printf("Setting current profile to %s\n",apply_profile.name);
         config.current = apply_profile;
         set_profile(apply_profile);
         if(save_as_current){
@@ -334,73 +340,6 @@ int list_profiles() {
     return 0;
 }
 
-//Come back to this later
-//int save_profiles() {
-//    //printf("Saving profiles\n");
-//    //char *fileName = strcat(getenv("HOME"), "/.config/wallman");
-//    char *fileName = getenv("HOME");
-//    //printf("hi! %s - :-)\n",fileName);
-//    FILE *config = fopen(fileName, "w+"); /* should check the result */
-//
-//    if (config == NULL) {
-//        fileName = "/etc/wallman";
-//        config = fopen(fileName, "r");
-//        if (config == NULL) {
-//            printf("File could not be opened\n");
-//            return -1;
-//        }
-//    }
-//    //fprintf(config,"meow!\n");
-//    //fputs("meow2!\n",config);
-//    char current[100] = "";
-//    sprintf(current, "current: %s\n", curr_wallpaper);
-//    fprintf(config, current);
-//
-//    int profile_idx = 0;
-//    while (profile_idx < NUM_PROFILES && strncmp(profiles[profile_idx].name, "undefined name", 256) != 0) {
-//        char name_bak[50];
-//        strncpy(name_bak, profiles[profile_idx].name, 256);
-//        char *title = strcat(profiles[profile_idx].name, ":");
-//        if (strncmp(profiles[profile_idx].disp_name, name_bak, 256) == 0) {
-//            /* They are the same */
-//            title = strcat(name_bak, ":\n");
-//        } else {
-//            //printf("%s != %s\n",profiles[profile_idx].disp_name,profiles[profile_idx].name);
-//            title = strcat(title, " ");
-//            title = strcat(title, profiles[profile_idx].disp_name);
-//            title = strcat(title, "\n");
-//        }
-//        fprintf(config, title);
-//        char monitor_count_str[10] = "";
-//        sprintf(monitor_count_str, "    monitors: %d\n", profiles[profile_idx].mon_num);
-//        fprintf(config, monitor_count_str);
-//
-//        char cat_name[256] = "";
-//        sprintf(cat_name, "    category: %s\n", profiles[profile_idx].category);
-//        fprintf(config, cat_name);
-//
-//        for (int idx = 0; idx < profiles[profile_idx].mon_num; idx++) {
-//            char path[500] = "";
-//            sprintf(path, "    %s\n", profiles[profile_idx].paths[idx]);
-//            fprintf(config, path);
-//        }
-//        fprintf(config, "\n");
-//        profile_idx++;
-//    }
-//
-//
-//    fclose(config);
-//
-//    char command[1024] = "export HOME=/home/"; //lucifer && exec wallman-genmenu";
-//    char *user = getenv("USER");
-//    strcat(command, user);
-//    strcat(command, " && exec wallman-genmenu;");
-//    strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-//    //printf("Command to apply: %s\n", command);
-//    system(command);
-//
-//}
-
 //TODO: Make this work with the new system
 int set_path(char profile_name[80], int mon_num, char path[160]) {
     printf("Setting profile: %s on monitor %d to path %s\n", profile_name, mon_num, path);
@@ -482,13 +421,13 @@ int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2){
 void print_help(){
     printf("Usage: wallman [option(s)] [profile]\n");
     printf(" The options are: \n");
-    printf(" -l - list profiles\n");
-    printf(" -a - apply a profile (Does not set as current)\n");
-    printf(" -s - apply a profile and set as current\n");
-    printf(" -c - apply currently set profile\n");
-    printf(" -p - set the config file to use for the command\n");
-    printf(" -P - set the default config file to use\n");
-    printf(" -d - delete a profile\n");
+    printf(" -l --list - list profiles\n");
+    printf(" -a --apply - apply a profile (Does not set as current)\n");
+    printf(" -s --set - apply a profile and set as current\n");
+    printf(" -c --current - apply currently set profile\n");
+    printf(" -p --temp-profile - set the config file to use for the command\n");
+    printf(" -P --set-profile - set the default config file to use\n");
+    printf(" -d --delete - delete a profile\n");
 //    printf(" -s --set profile_name monitor_num wallpaper_path - change a single wallpaper in a profile\n");
 //    printf(" -s --set monitor_num wallpaper_path - sets a wallpaper temporarily\n");
 //    printf(" profile_name - set profile\n");
