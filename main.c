@@ -21,12 +21,6 @@ int set_profile(struct wallpaper profile);
 
 int set_path(char profile_name[], int mon_num, char path[]);
 
-int set_profile_disp_name(char *profile_name, char *disp_name);
-
-int get_wallpaper_num(char *profile_name);
-
-//int delete_profile(int profile_num);
-
 int delete_profile(struct wallpaper delete_me);
 
 struct wallpaper get_wallpaper(char *profile_name);
@@ -34,6 +28,8 @@ struct wallpaper get_wallpaper(char *profile_name);
 int set_profile_temp(struct wallpaper temp);
 
 int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_path);
+
+int set_hidden(int current, char* profile_name, int hidden);
 
 int create_new_profile(char* name, char* title, char* category, int hidden, char** paths);
 
@@ -74,7 +70,7 @@ int main(int argc, char **argv) {
     int new_profile = 0;
     char* new_profile_name = NULL;
 
-    int set_hidden = 0;
+    int set_hidden_arg = 0;
     char* hidden_val = NULL;
 
     int set_title = 0;
@@ -193,7 +189,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case 'H':
-                set_hidden = 1;
+                set_hidden_arg = 1;
                 hidden_val = optarg;
                 if(verbose_flag){
                     printf("Setting hidden to: %s\n",hidden_val);
@@ -278,7 +274,7 @@ int main(int argc, char **argv) {
         }
 
         int hidden = 0;
-        if(set_hidden){
+        if(set_hidden_arg){
             if(strncmp(hidden_val,"true",256) == 0 || strncmp(hidden_val,"True",256) == 0){
                 hidden = 1;
                 if(verbose_flag){
@@ -365,6 +361,67 @@ int main(int argc, char **argv) {
         save_profile_config(config);
     }
 
+    if(set_hidden_arg && !new_profile){
+
+        if(verbose_flag){
+            printf("Setting hidden value\n");
+        }
+        int modify_current = 0;
+        //Default to current
+        struct wallpaper modify_me = config.current;
+
+        //Do some checks ahead of time
+        if(profile_to_modify == NULL){
+            if(verbose_flag){
+                printf("No profile specified, using current");
+            }
+            modify_current = 1;
+        }else{
+            modify_current = 0;
+            modify_me = get_wallpaper(profile_to_modify);
+            if(strncmp(modify_me.name,"NOTHINGFOUND",256) == 0){
+                printf("Could not find specified profile, modifying current instead\n");
+                modify_current = 1;
+                modify_me = config.current;
+            }
+        }
+
+        if(verbose_flag){
+            printf("Modifying hidden: %s\n",modify_me.name);
+        }
+
+        //Is the one we are modifying the same as current?
+        //Cause if it is we want to modify current too
+        //But only if they are exactly the same
+        int modifying_currently_applied = 0;
+        if(!modify_current){
+            //Only check if we have a new one
+            modifying_currently_applied = wallpapers_equal(config.current,modify_me);
+        }
+
+        //If they entered nonsense, just set it false
+        int hidden_int = 0;
+        if(set_hidden_arg){
+            if(strncmp(hidden_val,"true",256) == 0 || strncmp(hidden_val,"True",256) == 0){
+                hidden_int = 1;
+                if(verbose_flag){
+                    printf("Setting hidden to true\n");
+                }
+            }
+        }
+
+        set_hidden(modify_current,profile_to_modify,hidden_int);
+
+        if(modifying_currently_applied){
+            printf("Modifying currently applied profile\n");
+            config.current.hidden = 1;
+        }
+
+        save_main_config(config);
+        save_profile_config(config);
+
+    }
+
     //These are mutually exclusive. Highest priority is setting a new profile
     if(set){
         struct wallpaper apply_profile = get_wallpaper(profile_to_apply);
@@ -426,42 +483,6 @@ struct wallpaper get_wallpaper(char *profile_name) {
     return config.wallpaper_list[conv];
 
 }
-
-int get_wallpaper_num(char *profile_name) {
-    int conv = -1;
-
-    for (int idx = 0; idx < num_profiles; idx++) {
-        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
-            conv = idx;
-            break;
-        }
-    }
-    if (conv == -1) {
-        printf("Could not find profile\n");
-        exit(0);
-    }
-
-    //printf("Current wallpaper is: %s\n",profiles[conv].name);
-    return conv;
-
-}
-
-int set_profile_temp(struct wallpaper temp) {
-
-    /*Since we construct the temp profile ourselves, assume it is correct*/
-    char command[1024] = "feh";
-    for (int idx = 0; idx < temp.mon_num; idx++) {
-        strcat(command, " --bg-scale \'");
-        strcat(command, temp.paths[idx]);
-        strcat(command, "\'");
-    }
-    strcat(command, " > /dev/null 2>&1"); /* Hide any errors because it looks better */
-    //printf("Command to apply: %s\n", command);
-    system(command);
-
-}
-
 
 /**
  * Uses feh to set a background
@@ -634,12 +655,38 @@ int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_
             strncpy(config.wallpaper_list[index].paths[mon_num-1],wall_path,256);
         }
 
-
     }
 
-
-
 }
+
+
+int set_hidden(int current, char* profile_name, int hidden){
+    if(current){
+        config.current.hidden = hidden;
+    }else{
+        int index = -1;
+        for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
+            if(strncmp(config.wallpaper_list[idx].name,profile_name,256)==0){
+                index = idx;
+                break;
+            }
+        }
+
+        if(index == -1){
+            printf("Unable to find profile\n");
+            return 0;
+        }
+
+        //Index is now what we are looking for!
+
+        if(verbose_flag){
+            printf("Set hidden on %s to val %d\n",config.wallpaper_list[index].name,hidden);
+        }
+        config.wallpaper_list[index].hidden = hidden;
+        save_profile_config(config);
+    }
+}
+
 
 int create_new_profile(char* name, char* title, char* category, int hidden, char** paths){
 

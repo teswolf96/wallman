@@ -85,7 +85,8 @@ int save_profile_config(struct Config curr){
 
         if(strncmp(curr.wallpaper_list[idx].category,"none",256) != 0){
 
-            category_list = vector_pushback_unique(category_list,curr.wallpaper_list[idx].category);
+            if(!curr.wallpaper_list[idx].hidden)
+                category_list = vector_pushback_unique(category_list,curr.wallpaper_list[idx].category);
 
             fprintf(config,"\tCategory: ");
             fprintf(config,curr.wallpaper_list[idx].category);
