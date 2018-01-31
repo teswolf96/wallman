@@ -33,6 +33,8 @@ int set_hidden(int current, char* profile_name, int hidden);
 
 int set_title_func(int current, char* profile_name, char* title);
 
+int set_category_func(int current, char* profile_name, char* category);
+
 int create_new_profile(char* name, char* title, char* category, int hidden, char** paths);
 
 int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
@@ -419,8 +421,8 @@ int main(int argc, char **argv) {
             config.current.hidden = 1;
         }
 
-        save_main_config(config);
-        save_profile_config(config);
+//        save_main_config(config);
+//        save_profile_config(config);
 
     }
 
@@ -470,9 +472,61 @@ int main(int argc, char **argv) {
             printf("Modifying currently applied profile\n");
             strncpy(config.current.disp_name,title_val,256);
         }
+//
+//        save_main_config(config);
+//        save_profile_config(config);
 
-        save_main_config(config);
-        save_profile_config(config);
+    }
+
+    if(set_category && !new_profile){
+
+        if(verbose_flag){
+            printf("Setting category value\n");
+        }
+        int modify_current = 0;
+        //Default to current
+        struct wallpaper modify_me = config.current;
+
+        //Do some checks ahead of time
+        if(profile_to_modify == NULL){
+            if(verbose_flag){
+                printf("No profile specified, using current");
+            }
+            modify_current = 1;
+        }else{
+            modify_current = 0;
+            modify_me = get_wallpaper(profile_to_modify);
+            if(strncmp(modify_me.name,"NOTHINGFOUND",256) == 0){
+                printf("Could not find specified profile, modifying current instead\n");
+                modify_current = 1;
+                modify_me = config.current;
+            }
+        }
+
+        if(verbose_flag){
+            printf("Modifying category on: %s\n",modify_me.name);
+        }
+
+        //Is the one we are modifying the same as current?
+        //Cause if it is we want to modify current too
+        //But only if they are exactly the same
+        int modifying_currently_applied = 0;
+        if(!modify_current){
+            //Only check if we have a new one
+            modifying_currently_applied = wallpapers_equal(config.current,modify_me);
+        }
+
+        //If they entered nonsense, just set it false
+
+        set_category_func(modify_current,profile_to_modify,category_val);
+
+        if(modifying_currently_applied){
+            printf("Modifying currently applied profile\n");
+            strncpy(config.current.category,category_val,256);
+        }
+
+//        save_main_config(config);
+//        save_profile_config(config);
 
     }
 
@@ -764,6 +818,34 @@ int set_title_func(int current, char* profile_name, char* title){
             printf("Set title on %s to val %s\n",config.wallpaper_list[index].name,title);
         }
         strncpy(config.wallpaper_list[index].disp_name,title,256);
+
+        save_profile_config(config);
+    }
+}
+
+int set_category_func(int current, char* profile_name, char* category){
+    if(current){
+        strncpy(config.current.category,category,256);
+    }else{
+        int index = -1;
+        for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
+            if(strncmp(config.wallpaper_list[idx].name,profile_name,256)==0){
+                index = idx;
+                break;
+            }
+        }
+
+        if(index == -1){
+            printf("Unable to find profile\n");
+            return 0;
+        }
+
+        //Index is now what we are looking for!
+
+        if(verbose_flag){
+            printf("Set category on %s to val %s\n",config.wallpaper_list[index].name,category);
+        }
+        strncpy(config.wallpaper_list[index].category,category,256);
 
         save_profile_config(config);
     }
