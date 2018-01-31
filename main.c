@@ -14,9 +14,6 @@ int load_profiles();
 
 int list_profiles();
 
-//int save_profiles();
-//int set_profile(char *profile_name);
-
 int set_profile(struct wallpaper profile);
 
 int set_path(char profile_name[], int mon_num, char path[]);
@@ -42,6 +39,7 @@ int wallpapers_equal(struct wallpaper wall1, struct wallpaper wall2);
 void print_help();
 
 int verbose_flag = 0;
+int overwrite = 0;
 
 struct Config config;
 //struct wallpaper profiles[NUM_PROFILES];
@@ -83,6 +81,10 @@ int main(int argc, char **argv) {
     int set_category = 0;
     char* category_val = NULL;
 
+    int save_as_new_profile_arg = 0;
+    int use_current_name = 0;
+    char* save_as_new_profile_name = NULL;
+
     int index;
     int print_help_arg = 0;
     int monitor = 1;
@@ -115,12 +117,14 @@ int main(int argc, char **argv) {
                         {"hidden",    required_argument, 0, 'H'},
                         {"title",    required_argument, 0, 't'},
                         {"category",    required_argument, 0, 'C'},
+                        {"save",    optional_argument, 0, 'S'},
+                        {"overwrite",    no_argument, 0, 'O'},
                         {0, 0, 0, 0}
                 };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "vhlca:f:F:s:d:m:w:p:n:t:C:H:",
+        c = getopt_long (argc, argv, "vOhlca:f:F:s:d:m:w:p:n:t:C:H:S:",
                          long_options, &option_index);
 
 
@@ -130,6 +134,9 @@ int main(int argc, char **argv) {
         switch (c) {
             case 'v':
                 verbose_flag = 1;
+                break;
+            case 'O':
+                overwrite = 1;
                 break;
             case 'h':
                 print_help_arg = 1;
@@ -213,6 +220,13 @@ int main(int argc, char **argv) {
                     printf("Setting category to: %s\n",category_val);
                 }
                 break;
+            case 'S':
+                save_as_new_profile_arg = 1;
+                save_as_new_profile_name = optarg;
+                if(verbose_flag){
+                    printf("Found optional arg: %s\n",save_as_new_profile_name);
+                }
+                break;
             case '?':
                 if (optopt == 'f')
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
@@ -236,6 +250,12 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (optopt == 'H')
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'S') {
+                    //If saving without passing in a name
+                    save_as_new_profile_arg = 1;
+                    use_current_name = 1;
+                    break;
+                }
                 else if (isprint (optopt))
                     fprintf(stderr, "Unknown option `-%c'.\n", optopt);
                 else
@@ -413,13 +433,13 @@ int main(int argc, char **argv) {
                 }
             }
         }
-
-        set_hidden(modify_current,profile_to_modify,hidden_int);
-
         if(modifying_currently_applied){
             printf("Modifying currently applied profile\n");
             config.current.hidden = 1;
         }
+        set_hidden(modify_current,profile_to_modify,hidden_int);
+
+
 
 //        save_main_config(config);
 //        save_profile_config(config);
@@ -472,9 +492,6 @@ int main(int argc, char **argv) {
             printf("Modifying currently applied profile\n");
             strncpy(config.current.disp_name,title_val,256);
         }
-//
-//        save_main_config(config);
-//        save_profile_config(config);
 
     }
 
@@ -520,13 +537,10 @@ int main(int argc, char **argv) {
 
         set_category_func(modify_current,profile_to_modify,category_val);
 
-        if(modifying_currently_applied){
-            printf("Modifying currently applied profile\n");
-            strncpy(config.current.category,category_val,256);
-        }
-
-//        save_main_config(config);
-//        save_profile_config(config);
+//        if(modifying_currently_applied){
+//            printf("Modifying currently applied profile\n");
+//            strncpy(config.current.category,category_val,256);
+//        }
 
     }
 
@@ -547,6 +561,20 @@ int main(int argc, char **argv) {
     if(delete_profile_arg){
         struct wallpaper delete_me = get_wallpaper(delete_profile_name);
         delete_profile(delete_me);
+        save_profile_config(config);
+    }
+
+    //Save the current profile after any modifications to it
+
+    if(save_as_new_profile_arg){
+
+        if(!use_current_name){
+            strncpy(config.current.name,save_as_new_profile_name,256);
+        }
+        printf("Calling create new profile\n");
+        create_new_profile(config.current.name,config.current.disp_name,config.current.category,
+                           config.current.hidden,config.current.paths);
+        save_main_config(config);
         save_profile_config(config);
     }
 
@@ -581,7 +609,7 @@ struct wallpaper get_wallpaper(char *profile_name) {
         }
     }
     if (conv == -1) {
-        printf("Could not find profile to modify\n");
+        //printf("Could not find profile to modify\n");
         struct wallpaper dummy;
         strncpy(dummy.name,"NOTHINGFOUND",256);
         return  dummy;
@@ -657,34 +685,6 @@ int list_profiles() {
         }
         printf("\n");
     }
-    return 0;
-}
-
-//TODO: Make this work with the new system
-int set_path(char profile_name[80], int mon_num, char path[160]) {
-    printf("Setting profile: %s on monitor %d to path %s\n", profile_name, mon_num, path);
-    int conv = -1;
-    //printf("Word detected\n");
-    for (int idx = 0; idx < vector_size(config.wallpaper_list); idx++) {
-        //printf("Comparing %s to %s",argv[2],profiles[idx].name);
-        if (strncmp(profile_name, config.wallpaper_list[idx].name, 256) == 0) {
-            conv = idx;
-            break;
-        }
-    }
-    if (conv == -1) {
-        printf("No matching profiles\n");
-        return 0;
-    }
-
-    printf("Identified profile index as %d\n", conv);
-
-    if (mon_num > config.wallpaper_list[conv].mon_num || mon_num <= 0) {
-        printf("Invalid monitor selection\n");
-        return 0;
-    }
-
-    strncpy(config.wallpaper_list[conv].paths[mon_num - 1], path, 256);
     return 0;
 }
 
@@ -767,10 +767,11 @@ int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_
 
 }
 
-
 int set_hidden(int current, char* profile_name, int hidden){
     if(current){
         config.current.hidden = hidden;
+        save_main_config(config);
+
     }else{
         int index = -1;
         for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
@@ -791,6 +792,7 @@ int set_hidden(int current, char* profile_name, int hidden){
             printf("Set hidden on %s to val %d\n",config.wallpaper_list[index].name,hidden);
         }
         config.wallpaper_list[index].hidden = hidden;
+        save_main_config(config);
         save_profile_config(config);
     }
 }
@@ -798,6 +800,8 @@ int set_hidden(int current, char* profile_name, int hidden){
 int set_title_func(int current, char* profile_name, char* title){
     if(current){
         strncpy(config.current.disp_name,title,256);
+        save_main_config(config);
+
     }else{
         int index = -1;
         for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
@@ -819,6 +823,7 @@ int set_title_func(int current, char* profile_name, char* title){
         }
         strncpy(config.wallpaper_list[index].disp_name,title,256);
 
+        save_main_config(config);
         save_profile_config(config);
     }
 }
@@ -826,6 +831,7 @@ int set_title_func(int current, char* profile_name, char* title){
 int set_category_func(int current, char* profile_name, char* category){
     if(current){
         strncpy(config.current.category,category,256);
+        save_main_config(config);
     }else{
         int index = -1;
         for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
@@ -846,20 +852,52 @@ int set_category_func(int current, char* profile_name, char* category){
             printf("Set category on %s to val %s\n",config.wallpaper_list[index].name,category);
         }
         strncpy(config.wallpaper_list[index].category,category,256);
-
+        save_main_config(config);
         save_profile_config(config);
     }
 }
 
 int create_new_profile(char* name, char* title, char* category, int hidden, char** paths){
 
-    struct wallpaper new;
-    strncpy(new.name,name,256);
-    strncpy(new.disp_name,title,256);
-    strncpy(new.category,category,256);
-    new.hidden = hidden;
-    new.paths = paths;
-    vector_push_back(config.wallpaper_list,new);
+    struct wallpaper test_existing = get_wallpaper(name);
+    //If searching for the wallpaper returns nothing
+    if(strncmp(test_existing.name,"NOTHINGFOUND",256) == 0){
+        struct wallpaper new;
+        strncpy(new.name,name,256);
+        strncpy(new.disp_name,title,256);
+        strncpy(new.category,category,256);
+        new.hidden = hidden;
+        new.paths = paths;
+        vector_push_back(config.wallpaper_list,new);
+    }else{
+        if(verbose_flag){
+            printf("Found existing profile: %s\n",test_existing.name);
+        }
+        if(overwrite){
+            if(verbose_flag){
+                printf("Overwriting existing profile %s\n",name);
+            }
+            int index = -1;
+            for(int idx=0;idx<vector_size(config.wallpaper_list);idx++){
+                if(strncmp(config.wallpaper_list[idx].name,name,256)==0){
+                    index = idx;
+                    break;
+                }
+            }
+            
+            strncpy(config.wallpaper_list[index].name,name,256);
+            strncpy(config.wallpaper_list[index].disp_name,title,256);
+            strncpy(config.wallpaper_list[index].category,category,256);
+            config.wallpaper_list[index].hidden = hidden;
+            config.wallpaper_list[index].paths = paths;
+
+        }else{
+            printf("A profile with that name already exists!\n"
+                           "Try using a different name or use the -O flag to overwrite it!\n");
+        }
+    }
+
+
 }
 
 
@@ -903,6 +941,7 @@ void print_help(){
     printf(" -H --hidden - set the monitor to modify\n");
     printf(" -w --wallpaper - set the path to a wallpaper\n"
                    "\tIf no profile is set, this will change only your current profile\n");
-
+    printf(" -S --save - save the current profile as a new profile\n");
+    printf(" -O --overwrite - when saving, overwrite an existing profile if it exists\n");
 
 }
