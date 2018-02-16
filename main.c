@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
 
     int list = 0;
     int set = 0;
+    int regen_jgmenu = 0;
     int set_current = 0;
     int switch_profile = 0;
     int save_new_config_file = 0;
@@ -103,6 +104,7 @@ int main(int argc, char **argv) {
                            We distinguish them by their indices. */
                         {"help",     no_argument,       0, 'h'},
                         {"verbose",     no_argument,       0, 'v'},
+                        {"jgmenu",     no_argument,       0, 'j'},
                         {"list",     no_argument,       0, 'l'},
                         {"current",  no_argument,       0, 'c'},
                         {"apply",  required_argument, 0, 'a'},
@@ -124,7 +126,7 @@ int main(int argc, char **argv) {
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "vOhlca:f:F:s:d:m:w:p:n:t:C:H:S:",
+        c = getopt_long (argc, argv, "vjOhlca:f:F:s:d:m:w:p:n:t:C:H:S:",
                          long_options, &option_index);
 
 
@@ -140,6 +142,9 @@ int main(int argc, char **argv) {
                 break;
             case 'h':
                 print_help_arg = 1;
+                break;
+            case 'j':
+                regen_jgmenu = 1;
                 break;
             case 'l':
                 list = 1;
@@ -581,6 +586,11 @@ int main(int argc, char **argv) {
 
     //save_profile_config(config);
 
+    if(regen_jgmenu){
+        printf("Re-generating jgmenu config\n");
+        save_profile_config(config);
+    }
+
     //List is ALWAYS last
     if(list){
         struct Config temp = config;
@@ -943,5 +953,6 @@ void print_help(){
                    "\tIf no profile is set, this will change only your current profile\n");
     printf(" -S --save - save the current profile as a new profile\n");
     printf(" -O --overwrite - when saving, overwrite an existing profile if it exists\n");
+    printf(" -j --jgmenu - force regenerate the jgmenu\n");
 
 }
