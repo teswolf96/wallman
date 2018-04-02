@@ -35,4 +35,6 @@ char** vector_pushback_unique(char** vector, char* str);
  * @param categories - list of categories
  */
 void write_jgmenu(struct Config config, char** categories);
+void write_jgmenu_hidden(struct Config config, char** categories);
+
 #endif //WALLMAN_CONFIG_SAVE_H

@@ -37,8 +37,44 @@ int save_main_config(struct Config curr){
     }
 
 //    while(profile_loc < vector_size(main_config_tokens)) {
-        profile_loc = save_profile(curr.current, config, main_config_tokens, profile_loc);
+      //  profile_loc = save_profile(curr.current, config, main_config_tokens, profile_loc);
 //    }
+
+    fprintf(config,"Profile: ");
+    fprintf(config,curr.current.name);
+    fprintf(config,"\n");
+
+    if(strncmp(curr.current.disp_name,
+               curr.current.name,256) != 0){
+        fprintf(config,"\tTitle: ");
+        fprintf(config,curr.current.disp_name);
+        fprintf(config,"\n");
+    }
+
+    if(strncmp(curr.current.category,"none",256) != 0){
+        fprintf(config,"\tCategory: ");
+        fprintf(config,curr.current.category);
+        fprintf(config,"\n");
+    }
+
+    if(curr.current.hidden){
+        fprintf(config,"\tHidden: True\n");
+    }
+
+    //Paths
+    fprintf(config,"\tPaths:\n");
+
+    for(int path_idx = 0; path_idx<vector_size(curr.current.paths);path_idx++){
+        fprintf(config,"\t\t");
+        fprintf(config,curr.current.paths[path_idx]);
+        fprintf(config,"\n");
+    }
+
+
+    fprintf(config,"\n");
+
+
+
 
     fclose(config);
     return 0;
@@ -50,6 +86,7 @@ int save_profile_config(struct Config curr){
 
     //This is a vector to store all categories. Used for jgmenu config
     char** category_list = NULL;
+    char** category_list_hidden = NULL;
 
     assert(curr.wallpaper_list != NULL);
 
@@ -85,8 +122,11 @@ int save_profile_config(struct Config curr){
 
         if(strncmp(curr.wallpaper_list[idx].category,"none",256) != 0){
 
-            if(!curr.wallpaper_list[idx].hidden)
-                category_list = vector_pushback_unique(category_list,curr.wallpaper_list[idx].category);
+            if(!curr.wallpaper_list[idx].hidden) {
+                category_list = vector_pushback_unique(category_list, curr.wallpaper_list[idx].category);
+            }else{
+                category_list_hidden = vector_pushback_unique(category_list_hidden,curr.wallpaper_list[idx].category);
+            }
 
             fprintf(config,"\tCategory: ");
             fprintf(config,curr.wallpaper_list[idx].category);
@@ -119,6 +159,7 @@ int save_profile_config(struct Config curr){
 //    }printf("\n");
 
     write_jgmenu(curr,category_list);
+    write_jgmenu_hidden(curr,category_list_hidden);
 
     return 0;
 
@@ -127,7 +168,14 @@ int save_profile_config(struct Config curr){
 
 int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, int profile_loc){
     //printf("Called save profile on %s\n",print_wall.name);
-//    printf("Current token: %s\n",tokens[profile_loc].TOKEN_VAL);
+
+//    printf("Debug: Print All Tokens:\n");
+//    for(int idx=0;idx<vector_size(tokens);idx++){
+//        printf("Token: %s\n",tokens[idx].TOKEN_VAL);
+//    }
+
+
+    //printf("Current token: %s\n",tokens[profile_loc].TOKEN_VAL);
 
     //Print any comments before the profile
     while(tokens[profile_loc].TOKEN_NAME == COMMENT){
@@ -237,6 +285,7 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
                 profile_loc++;
                 fprintf(file, "\n");
                 int wall_idx;
+                //printf("Printing %d paths\n",vector_size(print_wall.paths));
                 for(int idx=0;idx<vector_size(print_wall.paths);idx++){
                     fprintf(file, "\t\t");
                     fprintf(file, print_wall.paths[idx]);
@@ -356,6 +405,95 @@ void write_jgmenu(struct Config config, char** categories){
        fprintf(jgmenu,"^back()\n");
 
    }
+    fclose(jgmenu);
+
+}
+
+void write_jgmenu_hidden(struct Config config, char** categories){
+
+//    printf("Called write jgmenu hidden\n");
+//    printf("Got categories: \n");
+//    for(int idx=0;idx<vector_size(categories);idx++){
+//        printf("%s, ",categories[idx]);
+//    }printf("\n");
+
+
+    char file_name_script[256] = "";
+    strncpy(file_name_script,getenv("HOME"),256);
+    strncat(file_name_script,"/.config/wallman/jgmenu_run_hidden",512);
+
+    if( access( file_name_script, F_OK ) != -1 ) {
+        //This allows the user to modify the script and prevent it from being overwritten
+        if (verbose_flag)
+            printf("Script already exists, skipping\n");
+    }else {
+        if (verbose_flag)
+            printf("Writing jgmenu script: %s\n", file_name_script);
+        FILE *jgmenu_script = fopen(file_name_script, "w+");
+
+        if (jgmenu_script == NULL) {
+            printf("Error opening %s\n", file_name_script);
+            return;
+        }
+
+        fprintf(jgmenu_script, "#!/bin/sh\n"
+                "cat ~/.config/wallman/jgmenu_hidden | jgmenu --vsimple --icon-size=0 --at-pointer=1");
+
+        char mode[] = "755";
+        chmod(file_name_script, S_IRWXU);
+        fclose(jgmenu_script);
+    }
+
+    char file_name[256] = "";
+    strncpy(file_name,getenv("HOME"),256);
+    strncat(file_name,"/.config/wallman/jgmenu_hidden",512);
+
+    if(verbose_flag)
+        printf("Writing jgmenu file: %s\n",file_name);
+    FILE *jgmenu = fopen(file_name, "w+");
+
+    if(jgmenu == NULL){
+        printf("Error opening %s\n",file_name);
+        return;
+    }
+
+    for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
+        if(strncmp(config.wallpaper_list[jdx].category,"none",256)==0 && config.wallpaper_list[jdx].hidden){
+            //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
+            fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+            fprintf(jgmenu,",wallman -s ");
+            fprintf(jgmenu,config.wallpaper_list[jdx].name);
+            fprintf(jgmenu,"&");
+            fprintf(jgmenu,"\n");
+        }
+    }
+
+    for(int idx=0;idx<vector_size(categories);idx++){
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,",^checkout(");
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,")\n");
+    }
+
+
+    for(int idx=0;idx<vector_size(categories);idx++){
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,",^tag(");
+        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,")\n");
+        for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
+            if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0 && config.wallpaper_list[jdx].hidden){
+                //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
+                fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+                fprintf(jgmenu,",wallman -s ");
+                fprintf(jgmenu,config.wallpaper_list[jdx].name);
+                fprintf(jgmenu,"&");
+                fprintf(jgmenu,"\n");
+            }
+        }
+        fprintf(jgmenu,"^back()\n");
+
+    }
     fclose(jgmenu);
 
 }
