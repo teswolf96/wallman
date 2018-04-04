@@ -671,11 +671,14 @@ int set_profile(struct wallpaper profile){
  */
 int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
-    printf("Active Wallpaper:\n");
 
     if(config.current.paths == NULL){
-        printf("Null Paths\n");
+        if(verbose_flag){
+            printf("Null Paths detected, shutting down\n");
+        }
+        exit(1);
     }
+    printf("Active Wallpaper:\n");
 
     printf("Profile: %s\n", config.current.name);
     printf("\tTitle: %s\n",config.current.disp_name);
