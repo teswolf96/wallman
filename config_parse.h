@@ -10,7 +10,7 @@
 extern int verbose_flag;
 
 typedef enum NAME{ACTIVE_PROFILE, CATEGORY, TITLE, HIDDEN, PATHLIST, PROFILE, COMMENT, STR} Token_Enum;
-static inline char *stringFromToken(enum NAME f)
+static inline const char *stringFromToken(enum NAME f)
 {
     static const char *strings[] = { "Active Profile", "Category", "Title", "Hidden","Paths", "Profile", "#", "STR"};
 
@@ -44,7 +44,7 @@ struct return_new_wallpaper {
     struct wallpaper return_val;
 };
 
-struct Config load_profiles_new();
+struct Config load_profiles();
 
 struct Config load_profile_file(struct Config config);
 

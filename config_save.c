@@ -27,9 +27,9 @@ int save_main_config(struct Config curr){
     if(main_config_tokens[0].TOKEN_NAME == ACTIVE_PROFILE){
         //We want to save an active profile
 
-        fprintf(config,main_config_tokens[0].TOKEN_VAL);
+        fprintf(config,"%s",main_config_tokens[0].TOKEN_VAL);
         fprintf(config,": ");
-        fprintf(config,curr.active_profile);
+        fprintf(config,"%s",curr.active_profile);
         fprintf(config,"\n");
 
         //Move the profile pointer forward twice
@@ -41,19 +41,19 @@ int save_main_config(struct Config curr){
 //    }
 
     fprintf(config,"Profile: ");
-    fprintf(config,curr.current.name);
+    fprintf(config,"%s",curr.current.name);
     fprintf(config,"\n");
 
     if(strncmp(curr.current.disp_name,
                curr.current.name,256) != 0){
         fprintf(config,"\tTitle: ");
-        fprintf(config,curr.current.disp_name);
+        fprintf(config,"%s",curr.current.disp_name);
         fprintf(config,"\n");
     }
 
     if(strncmp(curr.current.category,"none",256) != 0){
         fprintf(config,"\tCategory: ");
-        fprintf(config,curr.current.category);
+        fprintf(config,"%s",curr.current.category);
         fprintf(config,"\n");
     }
 
@@ -66,7 +66,7 @@ int save_main_config(struct Config curr){
 
     for(int path_idx = 0; path_idx<vector_size(curr.current.paths);path_idx++){
         fprintf(config,"\t\t");
-        fprintf(config,curr.current.paths[path_idx]);
+        fprintf(config,"%s",curr.current.paths[path_idx]);
         fprintf(config,"\n");
     }
 
@@ -110,13 +110,13 @@ int save_profile_config(struct Config curr){
     for(int idx=0;idx<vector_size(curr.wallpaper_list);idx++){
 
         fprintf(config,"Profile: ");
-        fprintf(config,curr.wallpaper_list[idx].name);
+        fprintf(config,"%s",curr.wallpaper_list[idx].name);
         fprintf(config,"\n");
 
         if(strncmp(curr.wallpaper_list[idx].disp_name,
                    curr.wallpaper_list[idx].name,256) != 0){
             fprintf(config,"\tTitle: ");
-            fprintf(config,curr.wallpaper_list[idx].disp_name);
+            fprintf(config,"%s",curr.wallpaper_list[idx].disp_name);
             fprintf(config,"\n");
         }
 
@@ -129,7 +129,7 @@ int save_profile_config(struct Config curr){
             }
 
             fprintf(config,"\tCategory: ");
-            fprintf(config,curr.wallpaper_list[idx].category);
+            fprintf(config,"%s",curr.wallpaper_list[idx].category);
             fprintf(config,"\n");
         }
 
@@ -142,7 +142,7 @@ int save_profile_config(struct Config curr){
 
         for(int path_idx = 0; path_idx<vector_size(curr.wallpaper_list[idx].paths);path_idx++){
             fprintf(config,"\t\t");
-            fprintf(config,curr.wallpaper_list[idx].paths[path_idx]);
+            fprintf(config,"%s",curr.wallpaper_list[idx].paths[path_idx]);
             fprintf(config,"\n");
         }
 
@@ -179,7 +179,7 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
 
     //Print any comments before the profile
     while(tokens[profile_loc].TOKEN_NAME == COMMENT){
-        fprintf(file,tokens[profile_loc].TOKEN_VAL);
+        fprintf(file,"%s",tokens[profile_loc].TOKEN_VAL);
         //fprintf(file,"\n");
         profile_loc++;
     }
@@ -189,10 +189,10 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
         profile_loc++;
     }
 
-    fprintf(file,tokens[profile_loc].TOKEN_VAL);
+    fprintf(file,"%s",tokens[profile_loc].TOKEN_VAL);
     fprintf(file, ": ");
     profile_loc++;
-    fprintf(file,print_wall.name);
+    fprintf(file,"%s",print_wall.name);
     fprintf(file,"\n");
     profile_loc++;
 
@@ -206,17 +206,17 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
             case TITLE:
                 printed_title = 1;
                 fprintf(file, "\t");
-                fprintf(file, tokens[profile_loc].TOKEN_VAL);
+                fprintf(file, "%s",tokens[profile_loc].TOKEN_VAL);
                 fprintf(file, ": ");
                 profile_loc++;
-                fprintf(file, print_wall.disp_name);
+                fprintf(file, "%s",print_wall.disp_name);
                 //profile_loc++;
                 fprintf(file, "\n");
                 break;
             case HIDDEN:
                 printed_hidden = 1;
                 fprintf(file, "\t");
-                fprintf(file, tokens[profile_loc].TOKEN_VAL);
+                fprintf(file, "%s",tokens[profile_loc].TOKEN_VAL);
                 fprintf(file, ": ");
                 profile_loc++;
 
@@ -227,24 +227,24 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
                     bool_str = "False";
                 }
 
-                fprintf(file, bool_str);
+                fprintf(file,"%s",bool_str);
                 //profile_loc++;
                 fprintf(file, "\n");
                 break;
             case CATEGORY:
                 printed_cat = 1;
                 fprintf(file, "\t");
-                fprintf(file, tokens[profile_loc].TOKEN_VAL);
+                fprintf(file,"%s",tokens[profile_loc].TOKEN_VAL);
                 fprintf(file, ": ");
                 profile_loc++;
-                fprintf(file, print_wall.category);
+                fprintf(file, "%s",print_wall.category);
                 //profile_loc++;
                 fprintf(file, "\n");
                 break;
             case STR:
                 break;
             case COMMENT:
-                fprintf(file, tokens[profile_loc].TOKEN_VAL);
+                fprintf(file, "%s",tokens[profile_loc].TOKEN_VAL);
                 //profile_loc++;
 
                 break;
@@ -257,7 +257,7 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
                     fprintf(file, "\t");
                     fprintf(file, "Title: ");
                     fprintf(file, ": ");
-                    fprintf(file, print_wall.disp_name);
+                    fprintf(file, "%s",print_wall.disp_name);
                     fprintf(file, "\n");
                 }
 
@@ -267,7 +267,7 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
                     fprintf(file, "\t");
                     fprintf(file, "Category: ");
                     fprintf(file, ": ");
-                    fprintf(file, print_wall.category);
+                    fprintf(file, "%s",print_wall.category);
                     fprintf(file, "\n");
 
                 }
@@ -280,15 +280,15 @@ int save_profile(struct wallpaper print_wall, FILE* file, struct Token* tokens, 
                 }
 
                 fprintf(file, "\t");
-                fprintf(file, tokens[profile_loc].TOKEN_VAL);
+                fprintf(file, "%s",tokens[profile_loc].TOKEN_VAL);
                 fprintf(file, ": ");
                 profile_loc++;
                 fprintf(file, "\n");
-                int wall_idx;
+                //int wall_idx;
                 //printf("Printing %d paths\n",vector_size(print_wall.paths));
                 for(int idx=0;idx<vector_size(print_wall.paths);idx++){
                     fprintf(file, "\t\t");
-                    fprintf(file, print_wall.paths[idx]);
+                    fprintf(file,"%s", print_wall.paths[idx]);
                     fprintf(file, "\n");
                 }
                 //Eat extra tokens!
@@ -350,7 +350,7 @@ void write_jgmenu(struct Config config, char** categories){
         fprintf(jgmenu_script, "#!/bin/sh\n"
                 "cat ~/.config/wallman/jgmenu | jgmenu --vsimple --icon-size=0 --at-pointer=1");
 
-        char mode[] = "755";
+        //char mode[] = "755";
         chmod(file_name_script, S_IRWXU);
         fclose(jgmenu_script);
     }
@@ -371,33 +371,33 @@ void write_jgmenu(struct Config config, char** categories){
     for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
         if(strncmp(config.wallpaper_list[jdx].category,"none",256)==0 && !config.wallpaper_list[jdx].hidden){
             //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
-            fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+            fprintf(jgmenu,"%s",config.wallpaper_list[jdx].disp_name);
             fprintf(jgmenu,",wallman -s ");
-            fprintf(jgmenu,config.wallpaper_list[jdx].name);
+            fprintf(jgmenu,"%s",config.wallpaper_list[jdx].name);
             fprintf(jgmenu,"&");
             fprintf(jgmenu,"\n");
         }
     }
 
     for(int idx=0;idx<vector_size(categories);idx++){
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,",^checkout(");
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,")\n");
     }
 
 
    for(int idx=0;idx<vector_size(categories);idx++){
-       fprintf(jgmenu,categories[idx]);
+       fprintf(jgmenu,"%s",categories[idx]);
        fprintf(jgmenu,",^tag(");
-       fprintf(jgmenu,categories[idx]);
+       fprintf(jgmenu,"%s",categories[idx]);
        fprintf(jgmenu,")\n");
        for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
            if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0 && !config.wallpaper_list[jdx].hidden){
                //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
-               fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+               fprintf(jgmenu,"%s",config.wallpaper_list[jdx].disp_name);
                fprintf(jgmenu,",wallman -s ");
-               fprintf(jgmenu,config.wallpaper_list[jdx].name);
+               fprintf(jgmenu,"%s",config.wallpaper_list[jdx].name);
                fprintf(jgmenu,"&");
                fprintf(jgmenu,"\n");
            }
@@ -439,7 +439,7 @@ void write_jgmenu_hidden(struct Config config, char** categories){
         fprintf(jgmenu_script, "#!/bin/sh\n"
                 "cat ~/.config/wallman/jgmenu_hidden | jgmenu --vsimple --icon-size=0 --at-pointer=1");
 
-        char mode[] = "755";
+        //char mode[] = "755";
         chmod(file_name_script, S_IRWXU);
         fclose(jgmenu_script);
     }
@@ -460,33 +460,33 @@ void write_jgmenu_hidden(struct Config config, char** categories){
     for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
         if(strncmp(config.wallpaper_list[jdx].category,"none",256)==0 && config.wallpaper_list[jdx].hidden){
             //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
-            fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+            fprintf(jgmenu,"%s",config.wallpaper_list[jdx].disp_name);
             fprintf(jgmenu,",wallman -s ");
-            fprintf(jgmenu,config.wallpaper_list[jdx].name);
+            fprintf(jgmenu,"%s",config.wallpaper_list[jdx].name);
             fprintf(jgmenu,"&");
             fprintf(jgmenu,"\n");
         }
     }
 
     for(int idx=0;idx<vector_size(categories);idx++){
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,",^checkout(");
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,")\n");
     }
 
 
     for(int idx=0;idx<vector_size(categories);idx++){
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,",^tag(");
-        fprintf(jgmenu,categories[idx]);
+        fprintf(jgmenu,"%s",categories[idx]);
         fprintf(jgmenu,")\n");
         for(int jdx=0;jdx<vector_size(config.wallpaper_list);jdx++){
             if(strncmp(config.wallpaper_list[jdx].category,categories[idx],256)==0 && config.wallpaper_list[jdx].hidden){
                 //printf("Writing config: %s\n",config.wallpaper_list[jdx].disp_name);
-                fprintf(jgmenu,config.wallpaper_list[jdx].disp_name);
+                fprintf(jgmenu,"%s",config.wallpaper_list[jdx].disp_name);
                 fprintf(jgmenu,",wallman -s ");
-                fprintf(jgmenu,config.wallpaper_list[jdx].name);
+                fprintf(jgmenu,"%s",config.wallpaper_list[jdx].name);
                 fprintf(jgmenu,"&");
                 fprintf(jgmenu,"\n");
             }

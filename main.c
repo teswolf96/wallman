@@ -10,19 +10,13 @@
 
 //#define NUM_PROFILES 200 //Does anyone really need more than 200 profiles?
 
-int load_profiles();
-
 int list_profiles();
 
 int set_profile(struct wallpaper profile);
 
-int set_path(char profile_name[], int mon_num, char path[]);
-
 int delete_profile(struct wallpaper delete_me);
 
 struct wallpaper get_wallpaper(char *profile_name);
-
-int set_profile_temp(struct wallpaper temp);
 
 int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_path);
 
@@ -43,7 +37,6 @@ int overwrite = 0;
 
 struct Config config;
 //struct wallpaper profiles[NUM_PROFILES];
-char curr_wallpaper[256];
 int num_profiles;
 
 int main(int argc, char **argv) {
@@ -85,8 +78,6 @@ int main(int argc, char **argv) {
     int save_as_new_profile_arg = 0;
     int use_current_name = 0;
     char* save_as_new_profile_name = NULL;
-
-    int index;
     int print_help_arg = 0;
     int monitor = 1;
     int c;
@@ -278,7 +269,7 @@ int main(int argc, char **argv) {
     }
 
     //So this loads the main config file
-    config = load_profiles_new();
+    config = load_profiles();
 
     //Check if we want to switch profiles
     //If so, do this before loading the profile file
@@ -532,10 +523,10 @@ int main(int argc, char **argv) {
         //Is the one we are modifying the same as current?
         //Cause if it is we want to modify current too
         //But only if they are exactly the same
-        int modifying_currently_applied = 0;
+        //int modifying_currently_applied = 0;
         if(!modify_current){
             //Only check if we have a new one
-            modifying_currently_applied = wallpapers_equal(config.current,modify_me);
+            /*modifying_currently_applied = */wallpapers_equal(config.current,modify_me);
         }
 
         //If they entered nonsense, just set it false
@@ -593,7 +584,7 @@ int main(int argc, char **argv) {
 
     //List is ALWAYS last
     if(list){
-        struct Config temp = config;
+        //struct Config temp = config;
         list_profiles();
     }
 
@@ -774,7 +765,7 @@ int set_wallpaper_path(int current, char* profile_name, int mon_num, char* wall_
         }
 
     }
-
+    return 0;
 }
 
 int set_hidden(int current, char* profile_name, int hidden){
@@ -805,6 +796,7 @@ int set_hidden(int current, char* profile_name, int hidden){
         save_main_config(config);
         save_profile_config(config);
     }
+    return 0;
 }
 
 int set_title_func(int current, char* profile_name, char* title){
@@ -836,6 +828,8 @@ int set_title_func(int current, char* profile_name, char* title){
         save_main_config(config);
         save_profile_config(config);
     }
+
+    return 0;
 }
 
 int set_category_func(int current, char* profile_name, char* category){
@@ -865,6 +859,7 @@ int set_category_func(int current, char* profile_name, char* category){
         save_main_config(config);
         save_profile_config(config);
     }
+    return 0;
 }
 
 int create_new_profile(char* name, char* title, char* category, int hidden, char** paths){
@@ -906,7 +901,7 @@ int create_new_profile(char* name, char* title, char* category, int hidden, char
                            "Try using a different name or use the -O flag to overwrite it!\n");
         }
     }
-
+    return 0;
 
 }
 
@@ -954,5 +949,4 @@ void print_help(){
     printf(" -S --save - save the current profile as a new profile\n");
     printf(" -O --overwrite - when saving, overwrite an existing profile if it exists\n");
     printf(" -j --jgmenu - force regenerate the jgmenu\n");
-
 }

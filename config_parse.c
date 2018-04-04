@@ -6,7 +6,7 @@ static int token_idx = 0;
 
 struct Token* main_config_tokens = NULL;
 
-struct Config load_profiles_new() {
+struct Config load_profiles() {
 
     char fileName[512];
     strncpy(fileName,getenv("HOME"),512); //Get this one first
@@ -113,7 +113,7 @@ struct Config load_profile_file(struct Config config){
     strncpy(profileFileName,getenv("HOME"),256); //Get this one first
     strcat(profileFileName, "/.config/wallman/");
     strcat(profileFileName, config.active_profile);
-    strcat(profileFileName, ".profile");
+    strcat(profileFileName, "profile");
 
     if(verbose_flag)
         printf("Current Profile: %s\n",config.active_profile);
