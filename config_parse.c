@@ -8,6 +8,8 @@ struct Token* main_config_tokens = NULL;
 
 struct Config load_profiles() {
 
+    global_config.current.paths = NULL;
+
     char fileName[512];
     strncpy(fileName,getenv("HOME"),512); //Get this one first
     strncat(fileName, "/.config/wallman/config",512);
@@ -15,7 +17,75 @@ struct Config load_profiles() {
     FILE *config_file = fopen(fileName, "r"); /* should check the result */
 
     if (config_file == NULL) {
+
         printf("Default config missing.\n");
+
+        char *buffer;
+        size_t buffer_size = 10;
+        size_t num_chars;
+
+        buffer = (char *)malloc(buffer_size * sizeof(char));
+        if( buffer == NULL){
+            //This is bad
+            perror("Unable to allocate buffer");
+            exit(1);
+        }
+
+        printf("Would you like to generate a new one? [Y/N] ");
+        num_chars = getline(&buffer,&buffer_size,stdin);
+        if(num_chars == 0){
+            printf("Error getting input\n");
+        }
+
+        if(strncmp(buffer,"Y\n",2)==0 || strncmp(buffer,"y\n",2)==0){
+
+            char *active_prof;
+            size_t active_prof_size = 256;
+            size_t num_chars_active_prof;
+
+            active_prof = (char *)malloc(active_prof_size * sizeof(char));
+            if( active_prof == NULL){
+                //This is bad
+                perror("Unable to allocate buffer");
+                exit(1);
+            }
+
+            printf("What should the main profile file be called? ");
+            num_chars_active_prof = getline(&active_prof,&active_prof_size,stdin);
+            if(num_chars_active_prof == 0){
+                printf("Error getting input\n");
+            }
+            active_prof[num_chars_active_prof-1] = 0;
+            printf("Got %s\n",active_prof);
+            strncpy(global_config.active_profile,active_prof,256);
+
+            char file_name[256]  = "";
+            strncpy(file_name,getenv("HOME"),256);
+            strncat(file_name,"/.config/wallman/config",512);
+
+            if(verbose_flag)
+                printf("Saving to file: %s\n",file_name);
+
+            FILE *config = fopen(file_name, "w+");
+
+            fprintf(config,"Active Profile: %s\n",active_prof);
+
+            fprintf(config,"Profile: Undefined\n");
+            fprintf(config,"\tPaths:\n");
+
+            fclose(config);
+
+            struct wallpaper empty;
+            strncpy(empty.name,"",256);
+            empty.paths = NULL;
+            global_config.current = empty;
+            //exit(0);
+
+        }else{
+            //printf("Got no\n");
+            exit(0);
+        }
+
         return global_config;
     }
 

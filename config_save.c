@@ -3,7 +3,7 @@
 
 int save_main_config(struct Config curr){
 
-    assert(main_config_tokens != NULL);
+    //assert(main_config_tokens != NULL);
 
 //    for(int idx=0;idx<vector_size(main_config_tokens);idx++){
 //        printf("%s ",main_config_tokens[idx].TOKEN_VAL);
@@ -24,17 +24,16 @@ int save_main_config(struct Config curr){
     //fprintf(config,"meow_2!\n");
 
     int profile_loc = 0;
-    if(main_config_tokens[0].TOKEN_NAME == ACTIVE_PROFILE){
         //We want to save an active profile
 
-        fprintf(config,"%s",main_config_tokens[0].TOKEN_VAL);
-        fprintf(config,": ");
-        fprintf(config,"%s",curr.active_profile);
-        fprintf(config,"\n");
+    fprintf(config,"%s",main_config_tokens[0].TOKEN_VAL);
+    fprintf(config,": ");
+    fprintf(config,"%s",curr.active_profile);
+    fprintf(config,"\n");
 
-        //Move the profile pointer forward twice
-        profile_loc+=2;
-    }
+    //Move the profile pointer forward twice
+    profile_loc+=2;
+
 
 //    while(profile_loc < vector_size(main_config_tokens)) {
       //  profile_loc = save_profile(curr.current, config, main_config_tokens, profile_loc);
@@ -72,10 +71,6 @@ int save_main_config(struct Config curr){
 
 
     fprintf(config,"\n");
-
-
-
-
     fclose(config);
     return 0;
 

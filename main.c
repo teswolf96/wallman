@@ -42,6 +42,7 @@ int num_profiles;
 int main(int argc, char **argv) {
 
     config.wallpaper_list = NULL;
+    config.current.paths = NULL;
 
     if (argc < 2) {
         print_help();
@@ -271,6 +272,7 @@ int main(int argc, char **argv) {
 
     //So this loads the main config file
     config = load_profiles();
+    //printf("Config stuff: %s\n",config.current.name);
 
     //Check if we want to switch profiles
     //If so, do this before loading the profile file
@@ -670,6 +672,11 @@ int set_profile(struct wallpaper profile){
 int list_profiles() {
     //printf("Number of profiles loaded: %d\n", num_profiles);
     printf("Active Wallpaper:\n");
+
+    if(config.current.paths == NULL){
+        printf("Null Paths\n");
+    }
+
     printf("Profile: %s\n", config.current.name);
     printf("\tTitle: %s\n",config.current.disp_name);
     printf("\tCategory: %s\n", config.current.category);
