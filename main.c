@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
     int delete_profile_arg = 0;
     char *profile_to_apply = NULL;
     char *new_config_file = NULL;
+    char old_config_file[256];
     char *delete_profile_name = NULL;
     char **wall_path = NULL;
     char *profile_to_modify = NULL;
@@ -275,6 +276,12 @@ int main(int argc, char **argv) {
     //If so, do this before loading the profile file
     if(switch_profile){
         printf("Using profile: %s\n",new_config_file);
+        if(!save_new_config_file){
+            strncpy(old_config_file,config.active_profile,256);
+            if(verbose_flag){
+                printf("Found temporary config file: %s, storing it for later\n",old_config_file);
+            }
+        }
         strncpy(config.active_profile,new_config_file,256);
         if(save_new_config_file){
             save_main_config(config);
@@ -376,6 +383,11 @@ int main(int argc, char **argv) {
         if(modify_current || modifying_currently_applied){
             //Re-apply current with changes
             set_current = 1;
+        }
+
+        if(old_config_file != NULL){
+            strncpy(config.active_profile,old_config_file,256);
+            printf("At time of saving, the active profile is %s and the old is %s\n",config.active_profile,old_config_file);
         }
         save_main_config(config);
         save_profile_config(config);
@@ -548,6 +560,15 @@ int main(int argc, char **argv) {
         config.current = apply_profile;
         set_profile(apply_profile);
         if(save_as_current){
+            if(verbose_flag){
+                printf("Switch profile is %d and save_new_config_file is %d\n",switch_profile,save_new_config_file);
+            }
+            if(switch_profile && !save_new_config_file){
+                if(verbose_flag){
+                    printf("Storing the old config file %s into the active_profile to prevent overwriting\n",old_config_file);
+                }
+                strncpy(config.active_profile,old_config_file,256);
+            }
             save_main_config(config);
         }
     }else if(set_current){
