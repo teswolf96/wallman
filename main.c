@@ -276,14 +276,10 @@ int main(int argc, char **argv) {
 
     //Check if we want to switch profiles
     //If so, do this before loading the profile file
+    strncpy(old_config_file,config.active_profile,256);
+
     if(switch_profile){
         printf("Using profile: %s\n",new_config_file);
-        if(!save_new_config_file){
-            strncpy(old_config_file,config.active_profile,256);
-            if(verbose_flag){
-                printf("Found temporary config file: %s, storing it for later\n",old_config_file);
-            }
-        }
         strncpy(config.active_profile,new_config_file,256);
         if(save_new_config_file){
             save_main_config(config);
