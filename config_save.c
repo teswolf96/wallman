@@ -90,11 +90,11 @@ int save_profile_config(struct Config curr){
 //        printf("%s ",main_config_tokens[idx].TOKEN_VAL);
 //    }
 
-    char file_name[256] = "";
+    char file_name[512] = "";
     strncpy(file_name,getenv("HOME"),256);
-    strncat(file_name,"/.config/wallman/",512);
-    strncat(file_name,curr.active_profile,512);
-    strncat(file_name,".profile",512);
+    strncat(file_name,"/.config/wallman/",128);
+    strncat(file_name,curr.active_profile,64);
+    strncat(file_name,".profile",64);
 
     if(verbose_flag)
         printf("Saving to file: %s\n",file_name);
