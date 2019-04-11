@@ -11,8 +11,8 @@ struct Config load_profiles() {
     global_config.current.paths = NULL;
 
     char fileName[512];
-    strncpy(fileName,getenv("HOME"),512); //Get this one first
-    strncat(fileName, "/.config/wallman/config",512);
+    strncpy(fileName,getenv("HOME"),511); //Get this one first
+    strncat(fileName, "/.config/wallman/config",511);
 
     FILE *config_file = fopen(fileName, "r"); /* should check the result */
 
@@ -59,9 +59,9 @@ struct Config load_profiles() {
             printf("Got %s\n",active_prof);
             strncpy(global_config.active_profile,active_prof,256);
 
-            char file_name[256]  = "";
+            char file_name[600]  = "";
             strncpy(file_name,getenv("HOME"),256);
-            strncat(file_name,"/.config/wallman/config",512);
+            strncat(file_name,"/.config/wallman/config",511);
 
             if(verbose_flag)
                 printf("Saving to file: %s\n",file_name);
@@ -345,7 +345,7 @@ struct Token get_token(char *str) {
 
 struct Config parse_tokens() {
     struct Config config;
-    strncat(config.active_profile,"undefined_profile",256);
+    strncat(config.active_profile,"undefined_profile",255);
 
     if (vector_size(tokens) == 0) {
         //Empty config file

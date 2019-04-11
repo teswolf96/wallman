@@ -12,7 +12,7 @@ int save_main_config(struct Config curr){
     if(verbose_flag)
         printf("Saving Current Profile: %s\n",curr.current.name);
 
-    char file_name[256]  = "";
+    char file_name[600]  = "";
     strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/config",512);
 
@@ -324,7 +324,7 @@ char** vector_pushback_unique(char** vector, char* str){
 
 void write_jgmenu(struct Config config, char** categories){
 
-    char file_name_script[256] = "";
+    char file_name_script[600] = "";
     strncpy(file_name_script,getenv("HOME"),256);
     strncat(file_name_script,"/.config/wallman/jgmenu_run",512);
 
@@ -350,7 +350,7 @@ void write_jgmenu(struct Config config, char** categories){
         fclose(jgmenu_script);
     }
 
-    char file_name[256] = "";
+    char file_name[600] = "";
     strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/jgmenu",512);
 
@@ -413,7 +413,7 @@ void write_jgmenu_hidden(struct Config config, char** categories){
 //    }printf("\n");
 
 
-    char file_name_script[256] = "";
+    char file_name_script[600] = "";
     strncpy(file_name_script,getenv("HOME"),256);
     strncat(file_name_script,"/.config/wallman/jgmenu_run_hidden",512);
 
@@ -439,7 +439,7 @@ void write_jgmenu_hidden(struct Config config, char** categories){
         fclose(jgmenu_script);
     }
 
-    char file_name[256] = "";
+    char file_name[600] = "";
     strncpy(file_name,getenv("HOME"),256);
     strncat(file_name,"/.config/wallman/jgmenu_hidden",512);
 
